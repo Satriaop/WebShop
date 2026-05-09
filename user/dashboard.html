@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">dashboard</title>
+    <script src="../setting.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes loading-bar { 0% { left: -40%; } 100% { left: 100%; } }
+
+        body { 
+            background: #f0f4f8; 
+            background-image: radial-gradient(#d1d9e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #1a1a1a; 
+            font-family: 'inter', sans-serif; 
+            margin: 0; 
+            text-transform: lowercase; 
+            overflow-x: hidden;
+        }
+
+        #loading-line {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: #e2e8f0;
+            z-index: 10000;
+            display: none;
+        }
+        #loading-line::after {
+            content: '';
+            position: absolute;
+            height: 100%; width: 40%;
+            background: #007bff;
+            animation: loading-bar 1s infinite linear;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(15px);
+            height: 75px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0; z-index: 999;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .btn-action {
+            width: 45px; height: 45px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #1e293b;
+            transition: 0.3s;
+        }
+
+        .wallet-card {
+            background: #1a1a1a;
+            border-radius: 25px;
+            padding: 20px;
+            margin-bottom: 25px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        .wallet-info span { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .wallet-info h2 { margin: 5px 0 0; font-size: 1.5rem; font-weight: 900; }
+        .btn-topup {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .sidebar-box {
+            position: absolute;
+            top: 85px; left: 20px;
+            width: 220px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+            display: none;
+            z-index: 1001;
+            animation: slideDown 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            overflow-y: auto;
+            max-height: 420px;
+        }
+        .sidebar-box::-webkit-scrollbar { width: 0; }
+
+        .sidebar-title {
+            padding: 15px 20px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+            background: white;
+            position: sticky; top: 0; z-index: 5;
+        }
+
+        .profile-box {
+            position: absolute;
+            top: 85px; right: 20px;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            display: none;
+            padding: 25px;
+            z-index: 1001;
+            animation: slideDown 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            color: #475569;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+        .menu-item:hover { background: rgba(0, 123, 255, 0.05); color: #007bff; }
+        .menu-item i { margin-right: 12px; font-size: 0.9rem; width: 20px; text-align: center; }
+
+        /* GRID OWNER STYLE */
+        .grid-owner {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .item-owner {
+            background: white;
+            padding: 15px 5px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid #fff;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            cursor: pointer;
+        }
+        .item-owner i { font-size: 1.1rem; color: #007bff; margin-bottom: 8px; display: block; }
+        .item-owner span { font-size: 0.55rem; font-weight: 900; color: #1e293b; text-transform: uppercase; display: block; }
+
+        .slider-container {
+            width: 100%;
+            position: relative;
+            margin-bottom: 25px;
+            display: none;
+            overflow: hidden;
+        }
+        .slider-wrapper {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            border-radius: 20px;
+        }
+        .slide { min-width: 100%; position: relative; }
+        .slide img {
+            width: 100%;
+            height: 160px; 
+            object-fit: cover;
+            border-radius: 20px;
+            border: 1px solid #fff;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        .bc-banner-style {
+            background: linear-gradient(to right, #007bff, #0056b3);
+            border-radius: 20px; padding: 15px 20px;
+            display: none; align-items: center; justify-content: space-between;
+            box-shadow: 0 10px 20px rgba(0, 123, 255, 0.2);
+            animation: slideDown 0.5s ease;
+            margin-bottom: 25px; color: white;
+        }
+        .btn-read-bc { 
+            background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); 
+            padding: 8px 15px; border-radius: 12px; font-weight: 800; font-size: 0.7rem; cursor: pointer; backdrop-filter: blur(5px);
+        }
+
+        .bc-full-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(240, 244, 248, 0.95); backdrop-filter: blur(10px);
+            z-index: 10000; display: none;
+            flex-direction: column; animation: fadein 0.3s ease;
+        }
+
+        .info-label { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-top: 15px; display: block; }
+        .info-value { font-size: 0.85rem; font-weight: 600; color: #1e293b; display: block; margin-top: 2px; }
+
+        .pass-container { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
+        .pass-value { font-size: 0.85rem; font-weight: 600; color: #1e293b; letter-spacing: 2px; }
+        .btn-toggle-pass { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 5px; }
+
+        .btn-docs {
+            width: 100%; padding: 12px;
+            background: #1a1a1a; color: white;
+            border: none; border-radius: 12px;
+            font-weight: 800; cursor: pointer;
+            margin-top: 20px; font-size: 0.8rem;
+        }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
+        .content { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .search-wrapper { background: white; padding: 5px; border-radius: 20px; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.04); border: 1px solid #fff; }
+        .search-wrapper input { width: 100%; padding: 15px; border: none; outline: none; background: transparent; font-size: 0.9rem; }
+
+        .menu-jasa-lebar {
+    background: #1a1a1a;
+    color: white;
+    padding: 20px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: 0.3s;
+}
+
+.menu-jasa-lebar:active {
+    transform: scale(0.98);
+    background: #262626;
+}
+
+.logo-jasa {
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #ffffff;
+}
+
+.tulisan-jasa {
+    flex: 1;
+}
+
+.tulisan-jasa span { 
+    display: block; 
+    font-size: 0.6rem; 
+    font-weight: 800; 
+    color: #64748b; 
+    text-transform: uppercase; 
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+.tulisan-jasa h3 { 
+    margin: 0; 
+    font-size: 0.95rem; 
+    font-weight: 800; 
+    text-transform: lowercase;
+}
+
+.panah-kanan {
+    color: #475569;
+    font-size: 0.9rem;
+}
+/* Tombol Melayang Chatbot AI */
+        .fab-ai {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background: #1a1a1a; /* Warna hitam elegan */
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1000;
+            text-decoration: none;
+            transition: 0.3s;
+            border: 2px solid rgba(255,255,255,0.1);
+            animation: pulse-ai 2s infinite;
+        }
+
+        .fab-ai:hover {
+            transform: scale(1.1) rotate(5deg);
+            background: #007bff; /* Berubah biru saat hover */
+        }
+
+        @keyframes pulse-ai {
+            0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 123, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+        }
+        
+    </style>
+</head>
+<body> 
+
+    <div id="loading-line"></div>
+    <div id="overlay" class="overlay" onclick="closeAll()"></div>
+
+    <div class="header">
+        <div class="btn-action" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></div>
+        <div style="flex: 1; margin: 0 15px; overflow: hidden; white-space: nowrap;">
+            <marquee id="running-text" style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase;">WELCOME...</marquee>
+        </div>
+        <div class="btn-action" onclick="toggleProfile()"><i class="fa-solid fa-user"></i></div>
+    </div>
+
+    <div id="sidebar" class="sidebar-box">
+        <div class="sidebar-title">menu utama</div>
+        <div class="menu-item" onclick="location.href='produk.html'">
+            <i class="fa-solid fa-box-open"></i><span>daftar produk</span>
+        </div>
+        <div class="menu-item" onclick="location.href='riwayat-user.html'">
+            <i class="fa-solid fa-bag-shopping"></i><span>riwayat pembelian</span>
+        </div>
+        <div class="menu-item" onclick="openSearch()">
+            <i class="fa-solid fa-magnifying-glass"></i><span>cari produk</span>
+        </div>
+
+        <div class="sidebar-title">keuangan</div>
+        <div class="menu-item" onclick="location.href='deposit.html'">
+            <i class="fa-solid fa-wallet"></i><span>isi saldo</span>
+        </div>
+
+
+        <div id="owner-sidebar-section" style="display:none;">
+    <div class="sidebar-title">panel penjual</div>
+    <div class="menu-item" onclick="location.href='add-jasa.html'">
+        <i class="fa-solid fa-wand-magic-sparkles"></i><span>tambah jasa</span>
+    </div>
+    <div class="menu-item" onclick="location.href='riwayat-ajuan.html'">
+        <i class="fa-solid fa-file-invoice"></i><span>riwayat pengajuan</span>
+    </div>
+   </div>
+
+        <div id="owner-menu-penarikan" class="menu-item" onclick="location.href='penarikan.html'" style="display:none;">
+     <i class="fa-solid fa-wallet"></i><span>penarikan</span>
+        </div>
+        
+        <div class="sidebar-title">akun & sistem</div>
+        <div id="menu-merchant" class="menu-item" onclick="location.href='settings.html'" style="display:none;">
+            <i class="fa-solid fa-cogs"></i><span>akun & merchant</span>
+        </div>
+        <div class="menu-item" onclick="location.href='request.html'">
+            <i class="fa-solid fa-crown"></i><span>request owner</span>
+        </div>    
+        <div class="menu-item" onclick="logout()" style="color: #ef4444;">
+            <i class="fa-solid fa-right-from-bracket"></i><span>keluar</span>
+        </div>
+    </div>
+    <div id="profile-card" class="profile-box">
+        <span class="info-label">username :</span><span id="p-name" class="info-value">memuat...</span>
+        <span class="info-label">role :</span><span id="p-role" class="info-value">user (member)</span>
+        <span class="info-label">api key :</span><span id="p-key" class="info-value">memuat...</span>
+        <span class="info-label">no hp :</span><span id="p-phone" class="info-value">memuat...</span>
+        <span class="info-label">password :</span>
+        <div class="pass-container">
+            <span id="p-pass" class="pass-value">••••••••</span>
+            <button class="btn-toggle-pass" onclick="togglePass()"><i id="pass-icon" class="fa-solid fa-eye-slash"></i></button>
+        </div>
+        <button class="btn-docs" onclick="window.location.href='docs.html'">docs api</button>
+    </div>
+
+    <div class="content">
+        <div class="wallet-card">
+            <div class="fa-solid wallet-info"><span>saldo aktif</span><h2 id="p-balance">rp 0</h2></div>
+            <button class="btn-topup" onclick="window.location.href='deposit.html'"><i class="fa-solid fa-plus"></i> top up</button>
+        </div>
+
+         <div id="user-menu-area" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
+            <div onclick="location.href='produk.html'" style="background: #1a1a1a; color: white; padding: 20px; border-radius: 25px; text-align: center; cursor: pointer;">
+                <i class="fa-solid fa-box-open" style="font-size: 1.2rem; margin-bottom: 8px; display: block;"></i>
+                <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">produk</span>
+            </div>
+            <div onclick="location.href='riwayat-user.html'" style="background: #007bff; color: white; padding: 20px; border-radius: 25px; text-align: center; cursor: pointer;">
+                <i class="fa-solid fa-clock-rotate-left" style="font-size: 1.2rem; margin-bottom: 8px; display: block;"></i>
+                <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">riwayat</span>
+            </div>             
+         </div>
+
+        <div class="menu-jasa-lebar" onclick="location.href='list-jasa.html'">
+    <div class="logo-jasa">
+        <i class="fa-solid fa-bolt"></i>
+    </div>
+    <div class="tulisan-jasa">
+        <span>LAYANAN JOKI DAN JASA</span>
+        <h3>LAYANAN PROFESIONAL DAN HARGA TERJANGKAU</h3>
+    </div>
+    <div class="panah-kanan">
+        <i class="fa-chevron-right"></i>
+    </div>
+        </div>    
+        
+        <div id="owner-area-1" class="grid-owner">
+            <div class="item-owner" onclick="location.href='edit-produk.html'"><i class="fa-solid fa-pen-to-square"></i><span>edit produk</span></div>
+            <div class="item-owner" onclick="location.href='total-user.html'"><i class="fa-solid fa-users"></i><span>total user</span></div>
+            <div class="item-owner" onclick="location.href='produk-manage.html'"><i class="fa-solid fa-boxes-stacked"></i><span>produk</span></div>
+        </div>
+        <div id="owner-area-2" class="grid-owner">
+            <div class="item-owner" onclick="location.href='add-produk.html'"><i class="fa-solid fa-plus-circle"></i><span>add produk</span></div>
+            <div class="item-owner" onclick="location.href='list-produk.html'"><i class="fa-solid fa-list-check"></i><span>list produk</span></div>
+            <div class="item-owner" onclick="location.href='del-produk.html'"><i class="fa-solid fa-trash-can"></i><span>del produk</span></div>
+        </div>
+
+        <div id="slider-container" class="slider-container">
+            <div id="slider-wrapper" class="slider-wrapper"></div>
+            <div id="slider-dots" class="slider-dots"></div>
+        </div>
+
+        <div id="bc-banner-area" class="bc-banner-style">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.6rem; font-weight: 800; opacity: 0.8; text-transform: uppercase;">pesan baru</span>
+                    <h4 id="bc-title-preview" style="margin: 0; font-size: 0.85rem; font-weight: 700;">pengumuman</h4>
+                </div>
+            </div>
+            <button class="btn-read-bc" onclick="openFullBC()">baca</button>
+        </div>
+
+        <div id="featured-section" style="margin-top: 10px; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">produk baru rilis</span>
+                <span onclick="location.href='produk.html'" style="font-size: 0.6rem; font-weight: 800; color: #007bff; text-transform: uppercase; cursor: pointer;">lihat semua</span>
+            </div>
+            <div id="featured-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"></div>
+        </div>
+
+        <div id="search-box" class="search-wrapper"><input type="text" id="pencarian" placeholder="cari produk apa kak?"></div>
+        <div id="main-placeholder" style="text-align: center; margin-top: 50px; opacity: 0.2;"><i class="fa-solid fa-layer-group" style="font-size: 3rem;"></i><p style="margin-top: 10px;">silahkan pilih menu</p></div>
+    </div>
+
+    <div id="bc-full-view" class="bc-full-overlay">
+        <div style="padding: 40px 25px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-weight: 900; font-size: 1.2rem; color: #007bff;">pesan.</div>
+            <div class="btn-action" onclick="closeFullBC()"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        <div style="padding: 20px 30px; overflow-y: auto;">
+            <div style="background: #fff; padding: 30px; border-radius: 30px;">
+                <span style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">pengumuman resmi</span>
+                <h1 id="bc-full-title" style="margin: 10px 0 25px; font-size: 1.6rem;">judul</h1>
+                <p id="bc-full-msg" style="font-size: 0.95rem; line-height: 1.8; white-space: pre-wrap;"></p>
+            </div>
+        </div>
+    </div>
+
+    <a href="auto-ai.html" class="fab-ai">
+        <i class="fa-solid fa-robot"></i>
+</a>
+    
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+            databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "market-d978f",
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let realPass = "********";
+        let currentSlide = 0;
+        let slideInterval;
+
+        function toggleSidebar() { 
+            const sb = document.getElementById('sidebar');
+            if (sb.style.display === 'block') closeAll();
+            else { closeAll(); sb.style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
+        }
+        function toggleProfile() { 
+            const pc = document.getElementById('profile-card');
+            if (pc.style.display === 'block') closeAll();
+            else { closeAll(); pc.style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
+        }
+        function closeAll() { 
+            document.getElementById('sidebar').style.display = 'none';
+            document.getElementById('profile-card').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+        function openSearch() { closeAll(); document.getElementById('main-placeholder').style.display = 'none'; document.getElementById('search-box').style.display = 'block'; document.getElementById('pencarian').focus(); }
+        function togglePass() {
+            const passElem = document.getElementById('p-pass');
+            const icon = document.getElementById('pass-icon');
+            if (passElem.innerText === '••••••••') {
+                passElem.innerText = realPass; passElem.style.letterSpacing = '0px'; icon.className = 'fa-solid fa-eye';
+            } else {
+                passElem.innerText = '••••••••'; passElem.style.letterSpacing = '2px'; icon.className = 'fa-solid fa-eye-slash';
+            }
+        }
+        function openFullBC() { document.getElementById('bc-full-view').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        function closeFullBC() { document.getElementById('bc-full-view').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+        function initBroadcast() {
+            db.ref('broadcast').on('value', (snap) => {
+                const data = snap.val(); const banner = document.getElementById('bc-banner-area');
+                if (data && data.message) {
+                    banner.style.display = 'flex';
+                    document.getElementById('bc-title-preview').innerText = data.title || "pengumuman";
+                    document.getElementById('bc-full-title').innerText = data.title || "pengumuman";
+                    document.getElementById('bc-full-msg').innerText = data.message;
+                } else banner.style.display = 'none';
+            });
+        }
+
+        function initBannerSlider() {
+            db.ref('banner_promo').on('value', (snap) => {
+                const wrapper = document.getElementById('slider-wrapper');
+                const dots = document.getElementById('slider-dots');
+                const container = document.getElementById('slider-container');
+                wrapper.innerHTML = ""; dots.innerHTML = "";
+                if (snap.exists()) {
+                    container.style.display = 'block';
+                    let i = 0;
+                    snap.forEach(child => {
+                        const d = child.val();
+                        wrapper.innerHTML += `<div class="slide"><img src="${d.image_url}"><div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 20px 15px 10px; border-radius: 0 0 20px 20px; font-size: 0.8rem; font-weight: 700;">${d.title || ""}</div></div>`;
+                        dots.innerHTML += `<div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`;
+                        i++;
+                    });
+                    startAutoSlide();
+                } else container.style.display = 'none';
+            });
+        }
+
+        function goToSlide(n) {
+            const wrapper = document.getElementById('slider-wrapper');
+            const dots = document.querySelectorAll('.dot');
+            if (n >= dots.length) n = 0; currentSlide = n;
+            wrapper.style.transform = `translateX(-${n * 100}%)`;
+            dots.forEach(d => d.classList.remove('active'));
+            if(dots[n]) dots[n].classList.add('active');
+        }
+
+        function startAutoSlide() { if(slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => goToSlide(currentSlide + 1), 4000); }
+
+        function initFeaturedProducts() {
+    db.ref('products').limitToLast(4).on('value', (snap) => {
+        const container = document.getElementById('featured-container');
+        container.innerHTML = "";
+        
+        if (snap.exists()) {
+            let products = [];
+            
+            snap.forEach(child => {
+                const p = child.val();
+                products.push(p);
+            });
+
+            products.reverse().forEach(p => {
+                container.innerHTML += `
+                    <div style="background: white; padding: 12px; border-radius: 20px; border: 1px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.02); cursor: pointer;" onclick="location.href='produk-detail.html?id=${p.productId}'">
+                        <img src="${p.foto || ''}" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:15px; margin-bottom:10px;">
+                        <span style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 3px;">${p.kategori || 'umum'}</span>
+                        <span style="font-size: 0.7rem; font-weight: 800; color: #1e293b; display: block; line-height: 1.2; height: 2.4em; overflow: hidden;">${p.nama}</span>
+                        <span style="font-size: 0.8rem; font-weight: 900; color: #007bff; display: block; margin-top: 8px;">rp ${(p.harga || 0).toLocaleString('id-ID')}</span>
+                    </div>
+                `;
+            });
+        } else {
+            container.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px; font-size: 0.7rem; color: #94a3b8;">tidak ada produk yang tersedia saat ini</div>';
+        }
+    });
+ }
+
+        async function loadData() {
+            const loader = document.getElementById('loading-line'); loader.style.display = 'block';
+            initBroadcast(); initBannerSlider(); initFeaturedProducts();
+            const token = localStorage.getItem('sessionToken');
+            if (!token) { location.href = "login.html"; return; }
+            db.ref('users/' + token).on('value', (snap) => {
+                const data = snap.val();
+                if (data) {
+                    document.getElementById('p-name').innerText = data.fullname || "user";
+                    document.getElementById('p-key').innerText = data.apiKey || "-";
+                    document.getElementById('p-phone').innerText = data.phone || "-";
+                    document.getElementById('p-role').innerText = data.role || "user (member)";
+                    document.getElementById('p-balance').innerText = "rp " + (data.balance || 0).toLocaleString('id-ID');
+                    realPass = data.password || "********";
+                    
+                    const namaTokoDB = typeof namaToko !== 'undefined' ? namaToko : "STORE";
+                    document.getElementById('running-text').innerText = `WELCOME ${data.fullname.toUpperCase()} TO ${namaTokoDB} KETIKA KAMU SUDAH MEMBELI JANGAN LUPA KASIH RATING YAAAA 🤩`;
+                    
+                    if (data.role === 'owner') {
+    document.getElementById('owner-sidebar-section').style.display = 'block';
+    document.getElementById('owner-menu-penarikan').style.display = 'flex';
+    document.getElementById('menu-merchant').style.display = 'flex';
+    
+    document.getElementById('user-menu-area').style.display = 'none';
+    document.getElementById('owner-area-1').style.display = 'grid';
+    document.getElementById('owner-area-2').style.display = 'grid';
+} else {
+    document.getElementById('owner-sidebar-section').style.display = 'none';
+    document.getElementById('owner-menu-penarikan').style.display = 'none';
+    document.getElementById('menu-merchant').style.display = 'none';
+    
+    document.getElementById('user-menu-area').style.display = 'grid';
+    document.getElementById('owner-area-1').style.display = 'none';
+    document.getElementById('owner-area-2').style.display = 'none';
+}
+                }
+            });
+            setTimeout(() => { loader.style.display = 'none'; }, 600);
+        }
+        function logout() { localStorage.clear(); location.href = "login.html"; }
+        window.onload = loadData;
+    </script>
+</body>
+</html>
