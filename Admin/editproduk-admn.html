@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>admin | edit produk tertinggi 😼</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            background: #f0f4f8; color: #1a1a1a; font-family: 'inter', sans-serif; 
+            margin: 0; padding: 20px; text-transform: lowercase;
+            padding-bottom: 80px;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 20px;}
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #1a1a1a; text-decoration: none; background: white; }
+        
+        /* Area Pilih Produk */
+        .search-box {
+            background: white; padding: 10px 20px; border-radius: 20px;
+            display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .search-box input { border: none; outline: none; width: 100%; font-family: inherit; font-weight: 600; text-transform: lowercase; }
+        .list-produk { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;}
+        .produk-card {
+            background: white; padding: 15px; border-radius: 22px;
+            display: flex; align-items: center; gap: 15px; cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.03); border: 1px solid #fff; transition: 0.2s;
+        }
+        .produk-card:hover { border-color: #007bff; background: #fafafa; }
+        .produk-img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #f8fafc; }
+        .produk-info { flex: 1; }
+        .produk-info h4 { margin: 0; font-size: 0.85rem; font-weight: 800; color: #1e293b; }
+        .produk-info p { margin: 3px 0 0; font-size: 0.75rem; font-weight: 700; color: #007bff; }
+
+        /* Area Form Edit */
+        #edit-form-container { display: none; }
+        label { display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: lowercase; margin-bottom: 8px; letter-spacing: 0.5px; margin-top: 10px; }
+        input, textarea, select { 
+            width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; 
+            background: #f8fafc; outline: none; font-family: inherit; box-sizing: border-box; 
+            margin-bottom: 15px; font-weight: 600; font-size: 0.85rem; transition: 0.3s;
+            text-transform: lowercase;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #007bff; background: white; }
+        
+        .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .img-slot { 
+            aspect-ratio: 1/1; background: #f8fafc; border: 2px dashed #e2e8f0; 
+            border-radius: 15px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; cursor: pointer; position: relative;
+        }
+        .img-slot img { width: 100%; height: 100%; object-fit: cover; }
+        .img-slot i { color: #007bff; font-size: 1.2rem; }
+
+        .secret-box { background: #fff5f5; border: 1px solid #feb2b2; padding: 20px; border-radius: 20px; margin-top: 15px; margin-bottom: 20px; }
+        .secret-box h4 { margin: 0 0 15px 0; font-size: 0.75rem; color: #c53030; text-transform: lowercase; display: flex; align-items: center; gap: 8px; }
+        
+        .action-area { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(240, 244, 248, 0.9); backdrop-filter: blur(10px); padding: 15px 20px 20px; box-sizing: border-box; z-index: 100; display: none;}
+        .btn-submit { width: 100%; max-width: 460px; margin: 0 auto; display: block; padding: 18px; background: #1a1a1a; color: white; border: none; border-radius: 15px; font-weight: 800; cursor: pointer; transition: 0.3s; text-transform: lowercase; font-size: 0.85rem; }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8); z-index: 1000; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+    <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: #007bff;"></i>
+    <p id="loading-text" style="margin-top: 15px; font-weight: 700; font-size: 0.8rem;">memproses...</p>
+</div>
+
+<div class="container">
+    <div class="header">
+        <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2 style="font-size: 1rem; margin: 0; font-weight: 900;">edit produk tertinggi 😼</h2>
+    </div>
+
+    <div id="pilih-produk-container">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
+            <input type="text" id="cari-produk" placeholder="cari nama produk yang mau diedit..." oninput="filterProduk()">
+        </div>
+        <div id="loading-list" style="text-align: center; padding: 20px;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="color: #007bff;"></i>
+        </div>
+        <div class="list-produk" id="container-produk"></div>
+    </div>
+
+    <div id="edit-form-container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin:0; font-size: 0.9rem; font-weight: 800;">form edit</h3>
+                <button onclick="kembaliKeDaftar()" style="background: #f1f5f9; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 700; color: #64748b; font-size: 0.7rem; cursor: pointer;">ganti produk</button>
+            </div>
+
+            <label>id produk (permanen) :</label>
+            <input type="text" id="id-produk" readonly style="background: #e2e8f0; color: #64748b;">
+
+            <label>foto produk saat ini :</label>
+            <div class="image-grid" id="current-images">
+                </div>
+            
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 15px; border-radius: 15px; font-size: 0.75rem; font-weight: 700; margin-bottom: 20px;">
+                <i class="fa-solid fa-info-circle"></i> dalam sistem ini, untuk mengubah foto harus upload ulang semua foto (tidak bisa ganti satu per satu). jika foto tidak ingin diubah, biarkan slot di bawah ini kosong.
+            </div>
+
+            <label>upload ulang semua foto (opsional) :</label>
+            <div class="image-grid" id="preview-container">
+                <div class="img-slot" onclick="document.getElementById('file-input').click()">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+            </div>
+            <input type="file" id="file-input" hidden multiple accept="image/*" onchange="prosesMultiFoto(this)">
+
+            <label>nama produk :</label>
+            <input type="text" id="nama-produk" placeholder="nama produk">
+
+            <label>kategori :</label>
+            <select id="kategori-produk">
+                <option value="akun">akun</option>
+                <option value="app prem">app prem</option>
+                <option value="e-book">e-book</option>
+                <option value="produk digital">produk digital</option>
+                <option value="lain nya">lain nya</option>
+            </select>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>stok :</label>
+                    <input type="number" id="stok-produk">
+                </div>
+                <div>
+                    <label>status :</label>
+                    <select id="status-produk">
+                        <option value="active">aktif (bisa dibeli)</option>
+                        <option value="archive">arsip (sembunyi)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>harga awal (rp) :</label>
+                    <input type="number" id="harga-awal" oninput="hitunghargafinal()">
+                </div>
+                <div>
+                    <label>diskon (%) :</label>
+                    <input type="number" id="persen-diskon" oninput="hitunghargafinal()">
+                </div>
+            </div>
+
+            <label>harga jual akhir :</label>
+            <input type="number" id="harga-final" readonly style="background: #e2e8f0; color: #007bff; font-weight: 800;">
+
+            <label>deskripsi produk :</label>
+            <textarea id="desc-produk" rows="5"></textarea>
+
+            <div class="secret-box">
+                <h4><i class="fa-solid fa-lock"></i> data akun rahasia</h4>
+                <label>email / username :</label>
+                <input type="text" id="email-akun">
+                <label>kata sandi :</label>
+                <input type="text" id="pass-akun">
+                <label>status a2f :</label>
+                <select id="a2f-status">
+                    <option value="off">off</option>
+                    <option value="on">on</option>
+                </select>
+                <label>informasi tambahan :</label>
+                <textarea id="extra-info" rows="2"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="action-area" id="action-area">
+    <button class="btn-submit" id="btn-save" onclick="updateProduk()">simpan perubahan 😼</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseconfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseconfig);
+    const db = firebase.database();
+
+    let currentProductId = null;
+    let originalData = null; // Menyimpan data asli untuk perbandingan foto
+    let selectedFiles = []; // Untuk foto baru
+
+    // BAGIAN 1: LOGIKA PILIH PRODUK
+    function loadProdukForEdit() {
+        db.ref('products').once('value', (snap) => {
+            const container = document.getElementById('container-produk');
+            document.getElementById('loading-list').style.display = 'none';
+            container.innerHTML = "";
+
+            if (snap.exists()) {
+                snap.forEach((child) => {
+                    const data = child.val();
+                    const card = document.createElement('div');
+                    card.className = 'produk-card';
+                    card.setAttribute('data-nama', data.nama);
+                    card.onclick = () => bukaFormEdit(data);
+                    
+                    card.innerHTML = `
+                        <img src="${data.foto}" class="produk-img" onerror="this.src='https://placehold.co/100x100?text=no+image'">
+                        <div class="produk-info">
+                            <h4>${data.nama}</h4>
+                            <p>rp ${data.harga.toLocaleString('id-ID')}</p>
+                            <span style="font-size:0.6rem; color:#94a3b8;">id: ${data.productId}</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color: #e2e8f0;"></i>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8; font-weight:700;">belum ada produk.</div>';
+            }
+        });
+    }
+
+    function filterProduk() {
+        const keyword = document.getElementById('cari-produk').value.toLowerCase();
+        const cards = document.querySelectorAll('.produk-card');
+        cards.forEach(card => {
+            const nama = card.getAttribute('data-nama').toLowerCase();
+            card.style.display = nama.includes(keyword) ? 'flex' : 'none';
+        });
+    }
+
+    // BAGIAN 2: LOGIKA FORM EDIT
+    function bukaFormEdit(data) {
+        currentProductId = data.productId;
+        originalData = data;
+        
+        // Sembunyikan daftar, munculkan form
+        document.getElementById('pilih-produk-container').style.display = 'none';
+        document.getElementById('edit-form-container').style.display = 'block';
+        document.getElementById('action-area').style.display = 'block';
+        window.scrollTo(0, 0);
+
+        // Isi data ke form
+        document.getElementById('id-produk').value = data.productId;
+        document.getElementById('nama-produk').value = data.nama;
+        document.getElementById('kategori-produk').value = data.kategori || "lain nya";
+        document.getElementById('stok-produk').value = data.stok;
+        document.getElementById('status-produk').value = data.status || "active";
+        document.getElementById('desc-produk').value = data.deskripsi;
+        
+        // Hitung harga awal dan diskon jika ada data asli (asumsi data tersimpan dengan benar saat add)
+        // Jika di add tidak disimpan harga_awal dan persen, kita taruh harga final di harga awal
+        if(data.harga_awal) {
+            document.getElementById('harga-awal').value = data.harga_awal;
+            document.getElementById('persen-diskon').value = data.persen_diskon || 0;
+        } else {
+            document.getElementById('harga-awal').value = data.harga;
+            document.getElementById('persen-diskon').value = 0;
+        }
+        document.getElementById('harga-final').value = data.harga;
+
+        // Data Akun
+        if(data.akun) {
+            document.getElementById('email-akun').value = data.akun.email || "";
+            document.getElementById('pass-akun').value = data.akun.pass || "";
+            document.getElementById('a2f-status').value = data.akun.a2f || "off";
+            document.getElementById('extra-info').value = data.akun.tambahan || "";
+        }
+
+        // Tampilkan foto saat ini
+        const currentImgContainer = document.getElementById('current-images');
+        currentImgContainer.innerHTML = "";
+        const album = data.album || [data.foto];
+        album.forEach(url => {
+            currentImgContainer.innerHTML += `
+                <div class="img-slot"><img src="${url}"></div>
+            `;
+        });
+        
+        // Reset input file baru
+        selectedFiles = [];
+        renderNewPreview();
+    }
+
+    function kembaliKeDaftar() {
+        if(selectedFiles.length > 0 && !confirm("perubahan foto akan hilang. lanjut?")) return;
+        document.getElementById('pilih-produk-container').style.display = 'block';
+        document.getElementById('edit-form-container').style.display = 'none';
+        document.getElementById('action-area').style.display = 'none';
+        loadProdukForEdit(); // Refresh daftar
+    }
+
+    // LOGIKA FOTO BARU (SAMA SEPERTI ADD)
+    function prosesMultiFoto(input) {
+        if (input.files) {
+            const files = Array.from(input.files);
+            selectedFiles = selectedFiles.concat(files);
+            renderNewPreview();
+        }
+    }
+
+    function renderNewPreview() {
+        const container = document.getElementById('preview-container');
+        container.innerHTML = selectedFiles.map((file, i) => `
+            <div class="img-slot" onclick="removeNewImg(${i})">
+                <img src="${URL.createObjectURL(file)}">
+            </div>
+        `).join('') + `
+            <div class="img-slot" onclick="document.getElementById('file-input').click()">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+        `;
+    }
+
+    function removeNewImg(i) {
+        selectedFiles.splice(i, 1);
+        renderNewPreview();
+    }
+
+    function hitunghargafinal() {
+        const awal = parseFloat(document.getElementById('harga-awal').value) || 0;
+        const diskon = parseFloat(document.getElementById('persen-diskon').value) || 0;
+        const final = document.getElementById('harga-final');
+        final.value = awal > 0 ? Math.round(awal - (awal * diskon / 100)) : "";
+    }
+
+    // LOGIKA SIMPAN PERUBAHAN
+    async function updateProduk() {
+        const btn = document.getElementById('btn-save');
+        const nama = document.getElementById('nama-produk').value.trim();
+        const hargaAwal = parseInt(document.getElementById('harga-awal').value);
+        const persenDiskon = parseInt(document.getElementById('persen-diskon').value) || 0;
+        const hargafinal = parseInt(document.getElementById('harga-final').value);
+        const stok = parseInt(document.getElementById('stok-produk').value);
+
+        if(!nama || !hargafinal || isNaN(stok)) return alert("lengkapi data pokok bos!");
+
+        const overlay = document.getElementById('loading-overlay');
+        const loadText = document.getElementById('loading-text');
+        overlay.style.display = 'flex';
+        btn.disabled = true;
+
+        try {
+            let finalFotoUrls = originalData.album || [originalData.foto]; // Default pakai foto lama
+
+            // JIKA ADA FOTO BARU, UPLOAD DAN GANTI SEMUA
+            if(selectedFiles.length > 0) {
+                let uploadedUrls = [];
+                for(let i=0; i < selectedFiles.length; i++) {
+                    loadText.innerText = `mengunggah foto baru ke-${i+1}...`;
+                    const formData = new FormData();
+                    formData.append("image", selectedFiles[i]);
+                    
+                    const res = await fetch("https://api.imgbb.com/1/upload?key=50145b1eaa1385c3d9549ebe496eb5b5", {
+                        method: "POST",
+                        body: formData
+                    }).then(r => r.json());
+                    
+                    if(res.success) uploadedUrls.push(res.data.url);
+                }
+                finalFotoUrls = uploadedUrls;
+            }
+
+            loadText.innerText = "menyimpan ke database...";
+
+            // Update data di Firebase
+            await db.ref('products/' + currentProductId).update({
+                nama: nama,
+                kategori: document.getElementById('kategori-produk').value,
+                foto: finalFotoUrls[0], // Foto utama adalah index 0
+                album: finalFotoUrls,
+                stok: stok,
+                status: document.getElementById('status-produk').value,
+                harga: hargafinal,
+                harga_awal: hargaAwal, // Kita simpan harga awal & diskon agar bisa diedit lagi
+                persen_diskon: persenDiskon,
+                deskripsi: document.getElementById('desc-produk').value,
+                lastUpdate: Date.now(),
+                akun: {
+                    email: document.getElementById('email-akun').value,
+                    pass: document.getElementById('pass-akun').value,
+                    a2f: document.getElementById('a2f-status').value,
+                    tambahan: document.getElementById('extra-info').value
+                }
+            });
+
+            alert("produk tertinggi berhasil diperbarui! 😼");
+            location.reload(); // Reload halaman untuk kembali ke daftar
+
+        } catch (e) {
+            alert("error: " + e.message);
+            overlay.style.display = 'none';
+            btn.disabled = false;
+        }
+    }
+
+    // Jalankan saat load
+    window.onload = loadProdukForEdit;
+</script>
+</body>
+</html>
