@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>welcome | x-store</title>
+    <script src="setting.js"></script>
+    <style>
+        @keyframes fadeinup { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        body { 
+            background: #f0f4f8; 
+            background-image: radial-gradient(#d1d9e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #1a1a1a; 
+            font-family: 'inter', -apple-system, sans-serif; 
+            margin: 0; 
+            text-transform: lowercase; 
+        }
+
+        .wrapper { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(10px);
+            width: 100%; 
+            max-width: 420px; 
+            padding: 45px 30px; 
+            border-radius: 35px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08); 
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.5);
+            animation: fadeinup 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .logo-container {
+            margin-bottom: 25px;
+        }
+        .logo-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border: 2px solid #28a745;
+        }
+
+        .header-text { margin-bottom: 25px; }
+        .welcome-msg { color: #28a745; font-weight: 700; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 8px; display: block; }
+        .description { color: #555; font-size: 1rem; line-height: 1.6; font-weight: 500; }
+
+        .grid-products { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            margin: 30px 0;
+        }
+        .product-tag { 
+            background: #1a1a1a; 
+            color: #fff; 
+            padding: 15px; 
+            border-radius: 18px; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            transition: 0.3s;
+            border: 1px solid #333;
+        }
+        .product-tag:hover { background: #007bff; border-color: #007bff; transform: translateY(-3px); }
+
+        .features-container { 
+            background: #fff; 
+            border: 1px solid #edf2f7;
+            padding: 20px; 
+            border-radius: 24px; 
+            text-align: left;
+            margin-bottom: 35px;
+        }
+        .features-title { 
+            font-weight: 800; 
+            font-size: 0.85rem; 
+            color: #1a1a1a; 
+            margin-bottom: 15px; 
+            display: flex; 
+            align-items: center;
+            gap: 8px;
+        }
+        .features-title::before { content: ""; width: 12px; height: 12px; background: #28a745; border-radius: 3px; display: inline-block; }
+
+        .feature-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin-bottom: 10px; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            color: #666;
+        }
+        .check-icon { color: #28a745; font-weight: 900; }
+
+        .nav-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .btn { 
+            padding: 18px; 
+            border-radius: 18px; 
+            text-decoration: none; 
+            font-weight: 800; 
+            font-size: 0.95rem; 
+            transition: 0.4s; 
+            display: block;
+        }
+        .btn-login { background: #007bff; color: white; box-shadow: 0 8px 20px rgba(0,123,255,0.2); }
+        .btn-regis { background: transparent; color: #1a1a1a; border: 2px solid #1a1a1a; }
+        
+        .btn:hover { transform: scale(1.02); opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="glass-card">
+            <div class="logo-container">
+                <img src="logo/logo.jpg" alt="logo" class="logo-img">
+            </div>
+
+            <div class="header-text">
+                <span class="welcome-msg">hai selamat datang di <span class="shop-name"></span></span>
+                <div class="description">
+                    <span class="shop-name"></span> adalah sebuah website yang bisa di sebut juga market / toko yang menjual berbagai produk digital contoh nya:
+                </div>
+            </div>
+
+            <div class="grid-products">
+                <div class="product-tag">e-book</div>
+                <div class="product-tag">app prem</div>
+                <div class="product-tag" style="grid-column: span 2;">& dan yang lain sebagai nya</div>
+            </div>
+
+            <div class="features-container">
+                <div class="features-title">kenapa harus <span class="shop-name"></span>?</div>
+                <div class="feature-item"><span class="check-icon">✓</span> layanan otomatis 24 jam</div>
+                <div class="feature-item"><span class="check-icon">✓</span> proses cepat</div>
+                <div class="feature-item"><span class="check-icon">✓</span> cs on 24 jam</div>
+                <div class="feature-item"><span class="check-icon">✓</span> dan sudah di pastikan aman</div>
+            </div>
+
+            <div class="nav-buttons">
+                <a href="user/login.html" class="btn btn-login">login</a>
+                <a href="user/regis.html" class="btn btn-regis">daftar</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (typeof settings !== 'undefined') {
+            const elements = document.querySelectorAll('.shop-name');
+            elements.forEach(item => item.innerText = settings.namatoko);
+        }
+    </script>
+</body>
+</html>
