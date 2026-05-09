@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>admin - verifikasi deposit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background: #f8fafc; font-family: 'inter', sans-serif; margin: 0; text-transform: lowercase; padding: 20px; }
+        .list-card { background: white; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1.5px solid #e2e8f0; }
+        .img-bukti { width: 100%; max-width: 200px; border-radius: 10px; margin: 10px 0; cursor: pointer; }
+        .btn-flex { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-acc { flex: 1; padding: 12px; background: #22c55e; color: white; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
+        .btn-reject { flex: 1; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2 style="font-weight: 900;">antrean deposit user</h2>
+    <div id="list-depo"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function loadPending() {
+        db.ref('pending_deposit').on('value', (snap) => {
+            const container = document.getElementById('list-depo');
+            container.innerHTML = "";
+            if (!snap.exists()) container.innerHTML = "tidak ada deposit pending.";
+            
+            snap.forEach(child => {
+                const d = child.val();
+                if (d.status === "pending") {
+                    container.innerHTML += `
+                        <div class="list-card">
+                            <p style="font-weight: 800; margin: 0;">user melakukan deposit sebesar: <b>rp ${parseInt(d.nominal).toLocaleString()}</b></p>
+                            <img src="${d.imageUrl}" class="img-bukti" onclick="window.open('${d.imageUrl}')">
+                            <p style="font-size: 0.7rem; color: #94a3b8;">jika benar silahkan konfirmasi dibawah agar saldo user masuk</p>
+                            <div class="btn-flex">
+                                <button class="btn-reject" onclick="proses('${d.depoId}', 'batal')">batal</button>
+                                <button class="btn-acc" onclick="proses('${d.depoId}', 'acc', '${d.token}', ${d.nominal})">konfirmasi</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        });
+    }
+
+    async function proses(id, tipe, token, nominal) {
+        if (!confirm("yakin ingin memproses ini?")) return;
+
+        if (tipe === 'acc') {
+            const userRef = db.ref('users/' + token);
+            const uSnap = await userRef.get();
+            const saldoSkrg = parseInt(uSnap.val().balance || 0);
+            
+            await userRef.update({ balance: saldoSkrg + parseInt(nominal) });
+            await db.ref('pending_deposit/' + id).update({ status: "sukses" });
+            alert("saldo berhasil dimasukkan!");
+        } else {
+            await db.ref('pending_deposit/' + id).remove();
+            alert("deposit dibatalkan.");
+        }
+    }
+
+    window.onload = loadPending;
+</script>
+</body>
+</html>

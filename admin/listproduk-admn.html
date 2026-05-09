@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>admin | list produk lengkap 😼</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            background: #f0f4f8; color: #1a1a1a; font-family: 'inter', sans-serif; 
+            margin: 0; padding: 20px; text-transform: lowercase;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #1a1a1a; text-decoration: none; background: white; }
+        
+        .search-box {
+            background: white; padding: 12px 20px; border-radius: 20px;
+            display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .search-box input { border: none; outline: none; width: 100%; font-family: inherit; font-weight: 600; text-transform: lowercase; }
+
+        .list-container { display: flex; flex-direction: column; gap: 12px; }
+        
+        .produk-item {
+            background: white; padding: 15px; border-radius: 20px;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid transparent; transition: 0.3s;
+        }
+        .produk-item:hover { border-color: #007bff; }
+
+        .img-wrapper { position: relative; }
+        .produk-img { width: 65px; height: 65px; border-radius: 15px; object-fit: cover; background: #f8fafc; border: 1px solid #eee; }
+        
+        .info-main { flex: 1; }
+        .info-main h4 { margin: 0; font-size: 0.85rem; font-weight: 800; color: #1e293b; }
+        .info-main .price { margin: 3px 0; font-size: 0.8rem; font-weight: 900; color: #007bff; }
+        
+        .badge-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+        .bg-stok { background: #f1f5f9; color: #475569; }
+        .bg-kat { background: #e0f2fe; color: #0369a1; }
+        .bg-status { background: #f0fdf4; color: #166534; }
+
+        #count-info { font-size: 0.75rem; font-weight: 700; color: #94a3b8; margin-bottom: 10px; padding-left: 5px; }
+        #loader { text-align: center; padding: 50px; color: #007bff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2 style="font-size: 1rem; margin: 0; font-weight: 900;">list produk lengkap 😼</h2>
+    </div>
+
+    <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
+        <input type="text" id="cari" placeholder="cari nama produk..." oninput="filterData()">
+    </div>
+
+    <div id="count-info">memvalidasi data produk...</div>
+    
+    <div id="loader"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i></div>
+    <div class="list-container" id="list-produk"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseconfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseconfig);
+    const db = firebase.database();
+
+    function fetchCompleteProducts() {
+        db.ref('products').on('value', (snap) => {
+            const container = document.getElementById('list-produk');
+            const loader = document.getElementById('loader');
+            const countBox = document.getElementById('count-info');
+            
+            container.innerHTML = "";
+            loader.style.display = 'none';
+
+            let count = 0;
+
+            if (snap.exists()) {
+                snap.forEach((child) => {
+                    const data = child.val();
+
+                    // VALIDASI: Hanya tampilkan jika Nama, Harga, dan Foto ada
+                    if (data.nama && data.harga && data.foto) {
+                        count++;
+                        container.innerHTML += `
+                            <div class="produk-item" data-nama="${data.nama}">
+                                <div class="img-wrapper">
+                                    <img src="${data.foto}" class="produk-img">
+                                </div>
+                                <div class="info-main">
+                                    <h4>${data.nama}</h4>
+                                    <p class="price">rp ${Number(data.harga).toLocaleString('id-ID')}</p>
+                                    <div class="badge-row">
+                                        <span class="badge bg-kat">${data.kategori || 'umum'}</span>
+                                        <span class="badge bg-stok">stok: ${data.stok || 0}</span>
+                                        <span class="badge bg-status">${data.status || 'aktif'}</span>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-circle-check" style="color: #22c55e; font-size: 0.9rem;"></i>
+                            </div>
+                        `;
+                    }
+                });
+                countBox.innerText = `menampilkan ${count} produk dengan data valid`;
+            } else {
+                countBox.innerText = "tidak ada produk sama sekali";
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8; font-weight:700; margin-top:50px;">kosong melompong.</p>';
+            }
+        });
+    }
+
+    function filterData() {
+        const val = document.getElementById('cari').value.toLowerCase();
+        const items = document.querySelectorAll('.produk-item');
+        items.forEach(it => {
+            const n = it.getAttribute('data-nama').toLowerCase();
+            it.style.display = n.includes(val) ? 'flex' : 'none';
+        });
+    }
+
+    window.onload = fetchCompleteProducts;
+</script>
+</body>
+</html>
