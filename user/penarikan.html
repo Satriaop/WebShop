@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>penarikan saldo</title>
+    <script src="../setting.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background: #f0f4f8; color: #1a1a1a; font-family: 'inter', sans-serif; 
+            margin: 0; text-transform: lowercase; overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px);
+            height: 70px; display: flex; align-items: center; padding: 0 20px;
+            position: sticky; top: 0; z-index: 999; border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .btn-back {
+            width: 42px; height: 42px; background: #fff; border: 1px solid #e2e8f0;
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; margin-right: 15px; color: #1e293b;
+        }
+
+        .content { padding: 25px; max-width: 500px; margin: 0 auto; }
+
+        .form-box {
+            background: white; padding: 25px; border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid #fff;
+        }
+
+        .label-input {
+            display: block; font-size: 0.7rem; font-weight: 800; color: #64748b;
+            text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;
+        }
+
+        input, select {
+            width: 100%; padding: 18px; border-radius: 18px; border: 1px solid #f1f5f9;
+            background: #f8fafc; font-weight: 800; font-family: inherit;
+            outline: none; font-size: 1rem; margin-bottom: 25px; color: #1e293b;
+        }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        .btn {
+            padding: 18px; border-radius: 18px; border: none; font-weight: 900;
+            font-size: 0.9rem; cursor: pointer; text-transform: uppercase; transition: 0.3s;
+        }
+
+        .btn-batal { background: #f1f5f9; color: #64748b; }
+        .btn-tarik { background: #1a1a1a; color: white; }
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
+
+        #status-saldo {
+            text-align: center; margin-bottom: 20px; font-weight: 800; color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="btn-back" onclick="location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></div>
+        <span style="font-weight: 900; font-size: 1.1rem;">tarik saldo</span>
+    </div>
+
+    <div class="content">
+        <div id="status-saldo">memuat saldo...</div>
+
+        <div class="form-box">
+            <label class="label-input">masukan nominal penarikan :</label>
+            <input type="number" id="nominal" placeholder="0">
+
+            <label class="label-input">pilih rekening tujuan :</label>
+            <select id="rekening-list">
+                <option value="">memuat rekening...</option>
+            </select>
+
+            <div class="btn-group">
+                <button class="btn btn-batal" onclick="location.href='dashboard.html'">batal</button>
+                <button class="btn btn-tarik" onclick="prosesTarik()">tarik</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+            databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "market-d978f",
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const myToken = localStorage.getItem('sessionToken');
+
+        let saldoSekarang = 0;
+        let dataUser = null;
+
+        function initPenarikan() {
+            if(!myToken) return window.location.href = 'login.html';
+
+            db.ref('users/' + myToken).on('value', (snap) => {
+                dataUser = snap.val();
+                if(dataUser) {
+                    saldoSekarang = Number(dataUser.balance) || 0;
+                    document.getElementById('status-saldo').innerText = "saldo aktif: rp " + saldoSekarang.toLocaleString('id-ID');
+                    
+                    const select = document.getElementById('rekening-list');
+                    select.innerHTML = '<option value="">-- pilih rekening --</option>';
+                    
+                    if(dataUser.paymentNumber) {
+                        select.innerHTML += `<option value="${dataUser.paymentNumber}">rekening utama (${dataUser.paymentNumber})</option>`;
+                    } else {
+                        select.innerHTML = '<option value="">rekening tidak diatur</option>';
+                    }
+                }
+            });
+        }
+
+        function prosesTarik() {
+            const nominal = parseInt(document.getElementById('nominal').value);
+            const selectElement = document.getElementById('rekening-list');
+            const rekeningValue = selectElement.value;
+
+            if(!nominal || nominal < 10000) return alert("minimal penarikan rp 10.000");
+            if(!rekeningValue) return alert("silahkan pilih rekening tujuan");
+            if(nominal > saldoSekarang) return alert("saldo tidak mencukupi");
+
+            if(confirm(`tarik saldo sebesar rp ${nominal.toLocaleString('id-ID')}?`)) {
+                const pullRef = db.ref('withdraw_requests').push();
+                
+                // Data ini akan masuk ke Web Admin sebagai bukti
+                pullRef.set({
+                    id: pullRef.key,
+                    userToken: myToken,
+                    userName: dataUser.fullname || "User",
+                    nominal: nominal,
+                    tujuan: rekeningValue,
+                    status: "pending",
+                    date: new Date().toISOString()
+                }).then(() => {
+                    // Potong saldo di database
+                    return db.ref('users/' + myToken).update({
+                        balance: saldoSekarang - nominal
+                    });
+                }).then(() => {
+                    const noAdmin = "6288989822427";
+                    const pesan = `HALO ADMIN SAYA INGIN MELALUKAN PENARIKAN SEBESAR RP${nominal.toLocaleString('id-ID')}\nNOMOR REKENING SAYA ${rekeningValue}\nTOLONG SEGERA DI PROSES YA\n\nJIKA SUDAH DI PROSES TOLONG KIRIM BUKTI`;
+                    
+                    const waUrl = `https://api.whatsapp.com/send?phone=${noAdmin}&text=${encodeURIComponent(pesan)}`;
+                    
+                    alert("permintaan terkirim ke admin! mengalihkan ke whatsapp...");
+                    window.location.href = waUrl;
+                }).catch(err => {
+                    alert("gagal mengirim request: " + err.message);
+                });
+            }
+        }
+
+        window.onload = initPenarikan;
+    </script>
+</body>
+</html>

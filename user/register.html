@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">daftar</title>
+    <script src="../setting.js"></script>
+    <style>
+        @keyframes fadein { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        body { 
+            background: #f0f4f8; 
+            background-image: radial-gradient(#d1d9e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #1a1a1a; 
+            font-family: 'inter', sans-serif; 
+            margin: 0; 
+            text-transform: lowercase; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .reg-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            width: 100%; 
+            max-width: 380px; 
+            padding: 40px 30px; 
+            border-radius: 30px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05); 
+            border: 1px solid #fff;
+            animation: fadein 0.6s ease-out;
+        }
+
+        h2 { font-size: 1.3rem; margin-bottom: 5px; color: #1e293b; text-align: center; }
+        .sub-txt { font-size: 0.8rem; color: #64748b; text-align: center; margin-bottom: 30px; display: block; }
+
+        .input-group { text-align: left; margin-bottom: 12px; }
+        label { font-size: 0.7rem; font-weight: 800; color: #475569; margin-left: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 5px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            outline: none; 
+            background: #fff;
+            font-size: 0.9rem;
+        }
+        input:focus { border-color: #28a745; box-shadow: 0 0 0 4px rgba(40,167,69,0.05); }
+
+        .btn-reg { 
+            width: 100%; 
+            padding: 16px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            font-size: 1rem; 
+            box-shadow: 0 8px 20px rgba(40,167,69,0.2);
+        }
+
+        #custom-popup {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            max-width: 300px;
+            width: 80%;
+            text-align: center;
+            animation: pop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.28);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .popup-msg { font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-bottom: 20px; line-height: 1.5; }
+        .popup-btn {
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .footer { text-align: center; margin-top: 25px; font-size: 0.8rem; color: #64748b; }
+        .footer a { color: #007bff; text-decoration: none; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+    <div class="reg-card">
+        <h2>gabung member</h2>
+        <span class="sub-txt">daftar di <span class="shop-name"></span> sekarang gratis</span>
+
+        <div class="input-group">
+            <label>nama lengkap</label>
+            <input type="text" id="name" placeholder="siapa nama anda?">
+        </div>
+        <div class="input-group">
+            <label>email</label>
+            <input type="email" id="email" placeholder="contoh@gmail.com">
+        </div>
+        <div class="input-group">
+            <label>nomor whatsapp</label>
+            <input type="tel" id="phone" placeholder="08xxxxxxxx">
+        </div>
+        <div class="input-group">
+            <label>buat password</label>
+            <input type="password" id="pass" placeholder="minimal 6 karakter">
+        </div>
+
+        <button class="btn-reg" onclick="handle_regis()">buat akun sekarang</button>
+        
+        <div class="footer">
+            sudah punya akun? <a href="login.html">masuk disini</a>
+        </div>
+    </div>
+
+    <div id="custom-popup">
+        <div class="popup-content">
+            <div class="popup-msg" id="popup-text"></div>
+            <button class="popup-btn" id="btn-close" onclick="closepopup()">oke kak</button>
+        </div>
+    </div>
+
+    <script>
+        function showpopup(msg, success = false) {
+            document.getElementById('popup-text').innerText = msg;
+            document.getElementById('custom-popup').style.display = 'flex';
+            if (success) {
+                document.getElementById('btn-close').style.display = 'none';
+            } else {
+                document.getElementById('btn-close').style.display = 'inline-block';
+            }
+        }
+
+        function closepopup() {
+            document.getElementById('custom-popup').style.display = 'none';
+        }
+
+        async function handle_regis() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const pass = document.getElementById('pass').value;
+
+            if (!name || !email || !phone || !pass) {
+                showpopup("kak, semua data wajib di isi ya jangan ada yang kosong");
+                return;
+            }
+
+            if (pass.length < 6) {
+                showpopup("maaf kak, pasword harus 6 digit");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, pass })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showpopup(result.message, true);
+                    setTimeout(() => { location.href = "dashboard.html"; }, 2500);
+                } else {
+                    showpopup(result.message);
+                }
+            } catch (e) {
+                showpopup("yah ada yang error kak");
+            }
+        }
+
+        window.onload = function() {
+            if (window.settings) {
+                document.title = "daftar | " + settings.namatoko;
+                var els = document.getElementsByClassName('shop-name');
+                for (var i = 0; i < els.length; i++) {
+                    els[i].innerText = settings.namatoko;
+                }
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>penambahan jasa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            background: #f0f4f8; color: #1a1a1a; font-family: 'inter', sans-serif; 
+            margin: 0; padding: 20px; text-transform: lowercase;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #1a1a1a; text-decoration: none; background: white; }
+        label { display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; margin-bottom: 8px; margin-top: 15px; }
+        input, textarea, select { 
+            width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; 
+            background: #f8fafc; outline: none; font-family: inherit; box-sizing: border-box; 
+            margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; text-transform: lowercase;
+        }
+        .btn-submit { 
+            width: 100%; margin-top: 25px; padding: 18px; background: #1a1a1a; 
+            color: white; border: none; border-radius: 15px; font-weight: 800; 
+            cursor: pointer; text-transform: lowercase; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2 style="font-size: 1rem; margin: 0; font-weight: 900;">tambah jasa baru</h2>
+    </div>
+
+    <div class="card">
+        <label>nama jasa :</label>
+        <input type="text" id="nama-jasa" placeholder="nama jasa">
+
+        <label>kategori jasa :</label>
+        <select id="kategori-jasa">
+            <option value="jasa push rank ml">jasa push rank ml</option>
+            <option value="jasa push rank ff">jasa push rank ff</option>
+            <option value="jasa joki event">jasa joki event</option>
+            <option value="jasa lainnya">jasa lainnya</option>
+        </select>
+
+        <label>harga jasa (rp) :</label>
+        <input type="number" id="harga-jasa" placeholder="harga">
+
+        <label>deskripsi jasa :</label>
+        <textarea id="desc-jasa" rows="5" placeholder="deskripsi lengkap jasa"></textarea>
+
+        <button class="btn-submit" onclick="postJasa()">posting jasa</button>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const currentuser = localStorage.getItem('sessionToken');
+
+    async function postJasa() {
+        const nama = document.getElementById('nama-jasa').value.trim();
+        const harga = document.getElementById('harga-jasa').value;
+        const kategori = document.getElementById('kategori-jasa').value;
+        const desc = document.getElementById('desc-jasa').value.trim();
+
+        if(!nama || !harga || !desc) return alert("data tidak lengkap");
+
+        const jasaId = "js-" + Date.now();
+        try {
+            await db.ref('services/' + jasaId).set({
+                jasaId: jasaId,
+                nama: nama,
+                harga: parseInt(harga),
+                kategori: kategori,
+                deskripsi: desc,
+                ownerToken: currentuser,
+                type: "jasa",
+                timestamp: Date.now()
+            });
+            alert("jasa berhasil ditambahkan");
+            window.location.href = 'dashboard.html';
+        } catch (e) { alert(e.message); }
+    }
+</script>
+</body>
+</html>

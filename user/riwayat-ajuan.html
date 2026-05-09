@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pengajuan Produk</title>
+    <script src="../setting.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            background: #f0f4f8; color: #1a1a1a; font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 20px; text-transform: lowercase;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #1a1a1a; text-decoration: none; background: white; }
+        
+        .status-card {
+            background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px;
+            display: flex; gap: 15px; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            border: 1px solid #fff;
+        }
+        .status-card img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+        .info-status { flex: 1; }
+        .prod-name { font-size: 0.85rem; font-weight: 800; display: block; margin-bottom: 5px; }
+        
+        .badge-pending { 
+            background: #fff9db; color: #f08c00; padding: 4px 10px; border-radius: 8px; 
+            font-size: 0.6rem; font-weight: 900; text-transform: uppercase;
+        }
+        
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2 style="font-size: 0.9rem; margin: 0; font-weight: 900;">Status Pengajuan Produk</h2>
+    </div>
+
+    <div id="list-pengajuan">
+        <div class="empty-state">Memuat data pengajuan...</div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const userToken = localStorage.getItem('userToken');
+
+    function loadRiwayat() {
+        const container = document.getElementById('list-pengajuan');
+        
+        // Filter berdasarkan ownerToken agar hanya melihat pengajuan sendiri
+        db.ref('pending_products').orderByChild('ownerToken').equalTo(userToken).on('value', (snap) => {
+            container.innerHTML = "";
+            
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    const data = child.val();
+                    container.innerHTML += `
+                        <div class="status-card">
+                            <img src="${data.foto}">
+                            <div class="info-status">
+                                <span class="prod-name">${data.nama}</span>
+                                <span class="badge-pending"><i class="fa-solid fa-clock"></i> Menunggu Persetujuan</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 0.75rem; font-weight: 900; color: #007bff; display: block;">Rp ${data.harga.toLocaleString('id-ID')}</span>
+                                <span style="font-size: 0.55rem; color: #94a3b8;">ID: ${data.productId}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-box-open"></i>
+                        <p style="font-weight: 700; font-size: 0.8rem;">Belum ada pengajuan produk yang sedang diproses.</p>
+                    </div>
+                `;
+            }
+        });
+    }
+
+    window.onload = loadRiwayat;
+</script>
+</body>
+</html>

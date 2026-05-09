@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aktivitas Saya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+        body { 
+            background: #f8fafc; color: #1e293b; font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; padding: 0; text-transform: lowercase;
+        }
+
+        .header {
+            background: white; padding: 20px; display: flex; align-items: center; gap: 15px;
+            position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #f1f5f9;
+        }
+
+        .btn-back {
+            width: 35px; height: 35px; background: #f1f5f9; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #1e293b; text-decoration: none; font-size: 0.9rem;
+        }
+
+        .tabs-container {
+            display: flex; background: #f1f5f9; margin: 20px; border-radius: 16px; padding: 5px;
+        }
+
+        .tab-item {
+            flex: 1; text-align: center; padding: 12px; font-size: 0.75rem; font-weight: 800;
+            text-transform: uppercase; cursor: pointer; border-radius: 12px; transition: 0.3s;
+            color: #64748b; letter-spacing: 0.5px;
+        }
+
+        .tab-item.active {
+            background: white; color: #2563eb; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .content-section { padding: 0 20px 100px; display: none; }
+        .content-section.active { display: block; }
+
+        .item-card {
+            background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px;
+            display: flex; gap: 15px; align-items: center; border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02); cursor: pointer;
+        }
+
+        .item-card img {
+            width: 70px; height: 70px; border-radius: 14px; object-fit: cover; background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .item-info { flex: 1; }
+        .item-name { font-size: 0.85rem; font-weight: 800; color: #0f172a; display: block; margin-bottom: 4px; }
+        .item-price { font-size: 0.8rem; font-weight: 700; color: #2563eb; }
+        
+        .status-badge {
+            font-size: 0.6rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;
+            text-transform: uppercase; margin-top: 8px; display: inline-block;
+        }
+        .status-success { background: #ecfdf5; color: #10b981; }
+        .status-pending { background: #fffbeb; color: #f59e0b; }
+
+        .action-group { display: flex; gap: 8px; }
+        .btn-action {
+            width: 38px; height: 38px; border-radius: 12px; border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; font-size: 0.9rem;
+        }
+        .btn-delete { background: #fff1f2; color: #ef4444; border: 1px solid #fecdd3; }
+        .btn-buy { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #94a3b8;
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.3; }
+        .empty-state p { font-size: 0.85rem; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-chevron-left"></i></a>
+    <h1 style="font-size: 1rem; margin: 0; font-weight: 800;">aktivitas saya</h1>
+</div>
+
+<div class="tabs-container">
+    <div class="tab-item active" onclick="switchTab('keranjang', this)">keranjang</div>
+    <div class="tab-item" onclick="switchTab('riwayat', this)">riwayat pembelian</div>
+</div>
+
+<div id="section-keranjang" class="content-section active">
+    <div id="list-keranjang">
+        <div class="empty-state">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>memuat keranjang...</p>
+        </div>
+    </div>
+</div>
+
+<div id="section-riwayat" class="content-section">
+    <div id="list-riwayat">
+        <div class="empty-state">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>memuat riwayat...</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const currentToken = localStorage.getItem('sessionToken');
+
+    function switchTab(target, el) {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('section-' + target).classList.add('active');
+    }
+
+    function loadData() {
+        if (!currentToken) {
+            const err = `<div class="empty-state"><p>silakan login dulu</p></div>`;
+            document.getElementById('list-keranjang').innerHTML = err;
+            document.getElementById('list-riwayat').innerHTML = err;
+            return;
+        }
+
+        // LOAD KERANJANG
+        db.ref('carts/' + currentToken).on('value', (snap) => {
+            const container = document.getElementById('list-keranjang');
+            container.innerHTML = "";
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    const data = child.val();
+                    container.innerHTML += `
+                        <div class="item-card">
+                            <img src="${data.foto || '../logo/joki.jpg'}">
+                            <div class="item-info">
+                                <span class="item-name">${data.nama}</span>
+                                <span class="item-price">rp ${data.harga.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="action-group">
+                                <button class="btn-action btn-buy" onclick="checkoutCart('${child.key}', ${data.harga})">
+                                    <i class="fa-solid fa-wallet"></i>
+                                </button>
+                                <button class="btn-action btn-delete" onclick="deleteCart('${child.key}')">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><p>keranjang kosong</p></div>`;
+            }
+        });
+
+        // LOAD RIWAYAT & LINK KE INVOICE
+        db.ref('pembelian').orderByChild('userToken').equalTo(currentToken).on('value', (snap) => {
+            const container = document.getElementById('list-riwayat');
+            container.innerHTML = "";
+            if (snap.exists()) {
+                let items = [];
+                snap.forEach(child => {
+                    items.push(child.val());
+                });
+                
+                // Urutkan dari yang terbaru
+                items.reverse().forEach(data => {
+                    container.innerHTML += `
+                        <div class="item-card" onclick="goToInvoice('${data.orderId}')">
+                            <img src="${data.foto || '../logo/joki.jpg'}">
+                            <div class="item-info">
+                                <span class="item-name">${data.nama}</span>
+                                <span class="item-price">rp ${data.total.toLocaleString('id-ID')}</span>
+                                <br>
+                                <span class="status-badge ${data.status === 'sukses' ? 'status-success' : 'status-pending'}">
+                                    ${data.status || 'sukses'}
+                                </span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #cbd5e1; font-size: 0.8rem;"></i>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-receipt"></i><p>belum ada transaksi</p></div>`;
+            }
+        });
+    }
+
+    async function checkoutCart(key, harga) {
+        if (!confirm(`beli jasa ini seharga rp ${harga.toLocaleString('id-ID')}?`)) return;
+        try {
+            const uSnap = await db.ref('users/' + currentToken).get();
+            const sld = parseInt(uSnap.val().balance || 0);
+            if (sld < harga) return alert("saldo tidak cukup.");
+
+            const cSnap = await db.ref('carts/' + currentToken + '/' + key).get();
+            const cData = cSnap.val();
+            const orderId = "order-js-" + Date.now();
+
+            const upd = {};
+            upd['users/' + currentToken + '/balance'] = sld - harga;
+            upd['pembelian/' + orderId] = {
+                orderId, userToken: currentToken, namaPembeli: uSnap.val().fullname,
+                productId: cData.productId || key, nama: cData.nama, foto: cData.foto || '',
+                total: harga, status: "sukses", type: "jasa",
+                ownerToken: cData.ownerToken || '', namaToko: cData.namaToko || 'store',
+                timestamp: Date.now()
+            };
+            upd['carts/' + currentToken + '/' + key] = null;
+
+            await db.ref().update(upd);
+            alert("pembelian berhasil!");
+            switchTab('riwayat', document.querySelectorAll('.tab-item')[1]);
+        } catch (e) { alert(e.message); }
+    }
+
+    function deleteCart(key) {
+        if(confirm('hapus dari keranjang?')) {
+            db.ref('carts/' + currentToken + '/' + key).remove();
+        }
+    }
+
+    // FUNGSI PINDAH KE INVOICE
+    function goToInvoice(orderId) {
+        window.location.href = 'invoice.html?id=' + orderId;
+    }
+
+    window.onload = loadData;
+</script>
+</body>
+</html>

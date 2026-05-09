@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Produk - Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --dark: #0f172a;
+            --text-light: #64748b;
+            --bg-soft: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        body { 
+            background: var(--bg-soft); 
+            color: var(--dark); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; padding: 0; 
+            text-transform: lowercase;
+            letter-spacing: -0.3px;
+        }
+
+        .header-nav { 
+            position: fixed; top: 0; width: 100%; height: 70px; 
+            display: flex; align-items: center; padding: 0 20px; 
+            box-sizing: border-box; z-index: 100;
+        }
+        .btn-back { 
+            width: 45px; height: 45px; background: var(--glass); 
+            backdrop-filter: blur(10px); border-radius: 16px; 
+            display: flex; align-items: center; justify-content: center; 
+            color: var(--dark); text-decoration: none; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .image-viewport { 
+            width: 100%; aspect-ratio: 1/1; background: #e2e8f0; 
+            position: relative; overflow: hidden; 
+        }
+        .slider-wrapper { 
+            display: flex; width: 100%; height: 100%; 
+            overflow-x: auto; scroll-snap-type: x mandatory; 
+            scrollbar-width: none;
+        }
+        .slider-wrapper::-webkit-scrollbar { display: none; }
+        .slide-item { min-width: 100%; height: 100%; scroll-snap-align: start; }
+        .slide-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .dot-nav { 
+            position: absolute; bottom: 55px; width: 100%; 
+            display: flex; justify-content: center; gap: 6px; z-index: 10; 
+        }
+        .dot { 
+            width: 6px; height: 6px; background: rgba(0,0,0,0.1); 
+            border-radius: 50%; transition: 0.3s; 
+        }
+        .dot.active { background: var(--primary); width: 20px; border-radius: 10px; }
+
+        .main-content { 
+            background: white; border-radius: 35px 35px 0 0; 
+            margin-top: -40px; position: relative; 
+            padding: 30px 24px 140px; min-height: 50vh; 
+            box-shadow: 0 -20px 40px rgba(0,0,0,0.03); 
+        }
+
+        .category-pill { 
+            display: inline-block; padding: 6px 12px; 
+            background: #eff6ff; color: var(--primary); 
+            border-radius: 10px; font-size: 0.65rem; 
+            font-weight: 800; text-transform: uppercase; 
+        }
+
+        .product-name { 
+            font-size: 1.5rem; font-weight: 800; color: var(--dark); 
+            margin: 15px 0 8px 0; line-height: 1.2; 
+        }
+
+        .rating-inline { 
+            display: flex; align-items: center; gap: 8px; 
+            font-size: 0.85rem; font-weight: 700; margin-bottom: 20px; 
+        }
+        .rating-inline i { color: #fbbe24; }
+
+        .price-section { 
+            display: flex; align-items: baseline; gap: 10px; 
+            margin-bottom: 25px; 
+        }
+        .price-final { font-size: 1.8rem; font-weight: 900; color: var(--primary); }
+
+        .store-card {
+            background: #f8fafc; border-radius: 20px; padding: 15px;
+            display: flex; align-items: center; gap: 15px; margin-bottom: 30px;
+            border: 1px solid #f1f5f9;
+        }
+        .store-img {
+            width: 50px; height: 50px; background: white; 
+            border-radius: 15px; display: flex; align-items: center; 
+            justify-content: center; font-size: 1.2rem; color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .store-name { font-weight: 800; color: var(--dark); font-size: 0.95rem; }
+
+        .section-row { 
+            display: flex; justify-content: space-between; 
+            align-items: center; margin-bottom: 20px; 
+        }
+        .qty-control { 
+            display: flex; align-items: center; gap: 5px; 
+            background: #f1f5f9; padding: 5px; border-radius: 14px; 
+        }
+        .qty-btn { 
+            width: 35px; height: 35px; border: none; 
+            background: white; border-radius: 10px; 
+            font-weight: 800; cursor: pointer; color: var(--dark);
+        }
+        .qty-val { width: 30px; text-align: center; font-weight: 800; }
+
+        .description-text { 
+            font-size: 0.9rem; line-height: 1.6; color: var(--text-light); 
+            margin-bottom: 35px; 
+        }
+
+        .review-card {
+            background: white; border-radius: 18px; padding: 15px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .review-user { font-weight: 800; font-size: 0.85rem; margin-bottom: 4px; display: block; }
+        .review-stars { color: #fbbe24; font-size: 0.65rem; margin-bottom: 8px; }
+        .review-desc { font-size: 0.85rem; color: var(--text-light); line-height: 1.5; }
+
+        .footer-nav { 
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); 
+            padding: 15px 24px 35px; box-sizing: border-box; 
+            display: flex; gap: 15px; border-top: 1px solid #f1f5f9; z-index: 100; 
+        }
+        .btn-buy { 
+            flex: 1; height: 58px; border-radius: 20px; border: none; 
+            background: var(--dark); color: white; 
+            font-weight: 800; font-size: 0.9rem; cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-buy:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+        #loading-screen { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: white; z-index: 1000; display: flex; 
+            align-items: center; justify-content: center; 
+        }
+
+        .section-label { 
+            font-size: 0.7rem; font-weight: 800; color: var(--text-light); 
+            text-transform: uppercase; margin-bottom: 10px; display: block;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loading-screen"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary);"></i></div>
+
+<div class="header-nav">
+    <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-chevron-left"></i></a>
+</div>
+
+<div class="image-viewport">
+    <div class="slider-wrapper" id="image-slider"></div>
+    <div class="dot-nav" id="dot-nav"></div>
+</div>
+
+<div class="main-content">
+    <span id="det-cat" class="category-pill">kategori</span>
+    <h1 id="det-title" class="product-name">memuat produk...</h1>
+    
+    <div class="rating-inline">
+        <i class="fa-solid fa-star"></i>
+        <span id="avg-rating">0.0</span>
+        <span style="color: var(--text-light); font-weight: 500;">• <span id="total-reviews">0</span> ulasan</span>
+    </div>
+
+    <div class="price-section">
+        <span id="det-price-new" class="price-final">rp 0</span>
+    </div>
+
+    <div class="store-card">
+        <div class="store-img"><i class="fa-solid fa-store"></i></div>
+        <div style="flex:1">
+            <span class="section-label" style="margin:0">penjual terverifikasi</span>
+            <div id="store-name" class="store-name">mengambil data...</div>
+        </div>
+        <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i>
+    </div>
+
+    <div class="section-row">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="background:#fef3c7; color:#d97706; padding:8px; border-radius:10px; font-size:0.8rem;">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+            <span id="det-stock-text" style="font-size:0.85rem; font-weight:700;">stok: 0 tersedia</span>
+        </div>
+        <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(-1)"><i class="fa-solid fa-minus"></i></button>
+            <div class="qty-val" id="qty-val">1</div>
+            <button class="qty-btn" onclick="changeQty(1)"><i class="fa-solid fa-plus"></i></button>
+        </div>
+    </div>
+
+    <div style="margin-top:30px;">
+        <span class="section-label">deskripsi produk</span>
+        <div id="det-desc" class="description-text"></div>
+    </div>
+
+    <div style="margin-top:30px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <span class="section-label" style="margin:0">ulasan pembeli</span>
+        </div>
+        <div id="comments-list">
+            <p style="font-size: 0.85rem; color: var(--text-light); text-align:center; padding:20px;">belum ada ulasan.</p>
+        </div>
+    </div>
+</div>
+
+<div class="footer-nav">
+    <button id="btn-buy" class="btn-buy" onclick="handleBuy()">beli sekarang • rp 0</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const currentUserToken = localStorage.getItem('sessionToken');
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    let currentStock = 0;
+    let basePrice = 0;
+    let currentQty = 1;
+    let productFullData = null;
+    let productFirebaseKey = null;
+
+    function changeQty(val) {
+        let next = currentQty + val;
+        if(next < 1) return;
+        if(next > currentStock) return alert("stok tidak mencukupi");
+        currentQty = next;
+        document.getElementById('qty-val').innerText = currentQty;
+        updateBuyButton();
+    }
+
+    function updateBuyButton() {
+        const total = basePrice * currentQty;
+        document.getElementById('btn-buy').innerText = `beli sekarang • rp ${total.toLocaleString('id-ID')}`;
+    }
+
+    function renderSlider(album, singleFoto) {
+        const slider = document.getElementById('image-slider');
+        const dotNav = document.getElementById('dot-nav');
+        if (album && Array.isArray(album) && album.length > 0) {
+            slider.innerHTML = album.map(img => `<div class="slide-item"><img src="${img}"></div>`).join('');
+            dotNav.innerHTML = album.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
+            slider.addEventListener('scroll', () => {
+                const index = Math.round(slider.scrollLeft / slider.offsetWidth);
+                document.querySelectorAll('.dot').forEach((d, i) => { d.classList.toggle('active', i === index); });
+            });
+        } else {
+            slider.innerHTML = `<div class="slide-item"><img src="${singleFoto}"></div>`;
+            dotNav.innerHTML = '';
+        }
+    }
+
+    function fetchDetail() {
+        if (!productId) return window.location.href = 'dashboard.html';
+        db.ref('products').orderByChild('productId').equalTo(productId).on('value', (snap) => {
+            document.getElementById('loading-screen').style.display = 'none';
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    productFirebaseKey = child.key;
+                    productFullData = child.val();
+                    currentStock = productFullData.stok || 0;
+                    basePrice = productFullData.harga || 0;
+                    
+                    renderSlider(productFullData.album, productFullData.foto);
+                    document.getElementById('det-title').innerText = productFullData.nama;
+                    document.getElementById('det-cat').innerText = productFullData.kategori;
+                    document.getElementById('det-price-new').innerText = "rp " + basePrice.toLocaleString('id-ID');
+                    document.getElementById('det-desc').innerText = productFullData.deskripsi;
+                    document.getElementById('det-stock-text').innerText = "stok: " + currentStock + " tersedia";
+                    
+                    const rawOwner = productFullData.ownerToken || productFullData.tokenOwner || "";
+                    const ownerPath = rawOwner.replace(/\./g, ',');
+                    db.ref('users/' + ownerPath).once('value', s => {
+                        if(s.exists()){
+                            document.getElementById('store-name').innerText = s.val().fullname || s.val().shopName || "toko resmi";
+                        } else {
+                            document.getElementById('store-name').innerText = productFullData.uploadBy || "petinggi web";
+                        }
+                    });
+
+                    updateBuyButton();
+                    loadReviews();
+                    
+                    const bb = document.getElementById('btn-buy');
+                    bb.disabled = currentStock <= 0;
+                    if(currentStock <= 0) bb.innerText = "stok habis";
+                });
+            }
+        });
+    }
+
+    function loadReviews() {
+        db.ref('reviews/' + productId).on('value', snap => {
+            const container = document.getElementById('comments-list');
+            if(!snap.exists()) return;
+            
+            let html = "";
+            let totalRate = 0;
+            let count = 0;
+
+            snap.forEach(c => {
+                const data = c.val();
+                totalRate += data.rating;
+                count++;
+                html += `
+                    <div class="review-card">
+                        <span class="review-user">${data.userName}</span>
+                        <div class="review-stars">${'<i class="fa-solid fa-star"></i>'.repeat(data.rating)}</div>
+                        <p class="review-desc">${data.comment}</p>
+                    </div>`;
+            });
+            
+            document.getElementById('avg-rating').innerText = (totalRate / count).toFixed(1);
+            document.getElementById('total-reviews').innerText = count;
+            container.innerHTML = html;
+        });
+    }
+
+    async function handleBuy() {
+        if (!currentUserToken) return alert("silakan login dahulu.");
+        if (currentStock < currentQty) return alert("stok tidak cukup.");
+        
+        const finalPrice = basePrice * currentQty;
+        if (!confirm(`beli ${currentQty} item seharga rp ${finalPrice.toLocaleString('id-ID')}?`)) return;
+
+        const btn = document.getElementById('btn-buy');
+        btn.disabled = true;
+        btn.innerText = "memproses...";
+
+        try {
+            const buyerPath = currentUserToken.replace(/\./g, ',');
+            const uSnap = await db.ref('users/' + buyerPath).get();
+            if(!uSnap.exists()) throw new Error("akun anda tidak valid.");
+            
+            const saldoUser = parseInt(uSnap.val().balance || 0);
+
+            if (saldoUser < finalPrice) {
+                alert("saldo tidak mencukupi.");
+                btn.disabled = false;
+                updateBuyButton();
+                return;
+            }
+
+            const rawOwner = productFullData.ownerToken || productFullData.tokenOwner || "";
+            const ownerPath = rawOwner.replace(/\./g, ',');
+            const ownerSnap = await db.ref('users/' + ownerPath).get();
+            
+            let saldoOwnerSekarang = 0;
+            if(ownerSnap.exists()){
+                saldoOwnerSekarang = parseInt(ownerSnap.val().balance || 0);
+            }
+
+            const adminFee = (finalPrice * 5) / 100;
+            const netOwner = finalPrice - adminFee;
+            const orderId = "inv-" + Date.now();
+
+            const upd = {};
+            upd['users/' + buyerPath + '/balance'] = saldoUser - finalPrice;
+            upd['users/' + ownerPath + '/balance'] = saldoOwnerSekarang + netOwner;
+            upd['products/' + productFirebaseKey + '/stok'] = currentStock - currentQty;
+
+            upd['pembelian/' + orderId] = {
+                orderId: orderId,
+                userToken: currentUserToken,
+                namaPembeli: uSnap.val().fullname || "pembeli",
+                productId: productId,
+                nama: productFullData.nama,
+                qty: currentQty,
+                total: finalPrice,
+                status: "sukses",
+                ownerToken: rawOwner,
+                timestamp: Date.now()
+            };
+
+            await db.ref().update(upd);
+            alert("pembelian berhasil!");
+            location.href = 'riwayat-user.html';
+        } catch (e) {
+            alert("error: " + e.message);
+            btn.disabled = false;
+            updateBuyButton();
+        }
+    }
+
+    window.onload = fetchDetail;
+</script>
+</body>
+</html>

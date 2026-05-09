@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Akun</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+        body { 
+            background: #f8fafc; color: #1e293b; font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; padding: 0; text-transform: lowercase;
+        }
+
+        .container { max-width: 500px; margin: 0 auto; padding: 20px 20px 100px; }
+
+        .header {
+            display: flex; align-items: center; gap: 15px; margin-bottom: 30px;
+        }
+
+        .btn-back {
+            width: 40px; height: 40px; background: white; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: #1e293b; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        h1 { font-size: 1.2rem; font-weight: 800; margin: 0; }
+
+        /* Profile Section */
+        .profile-card {
+            background: white; border-radius: 24px; padding: 20px;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.02); margin-bottom: 25px;
+        }
+        .profile-img { width: 60px; height: 60px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #64748b; }
+        .profile-info b { font-size: 1rem; color: #0f172a; display: block; }
+        .profile-info span { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
+
+        /* Form Styling */
+        .section-box {
+            background: white; border-radius: 24px; padding: 20px;
+            margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+        }
+        .section-title {
+            font-size: 0.75rem; font-weight: 800; color: #2563eb;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: block;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 8px; margin-left: 5px; }
+        .input-group input, .input-group select {
+            width: 100%; padding: 14px 18px; border-radius: 15px; border: 1.5px solid #f1f5f9;
+            background: #f8fafc; font-family: inherit; font-size: 0.9rem; font-weight: 600;
+            box-sizing: border-box; transition: 0.3s;
+        }
+        .input-group input:focus { outline: none; border-color: #2563eb; background: white; }
+
+        .btn-save {
+            width: 100%; padding: 16px; border-radius: 16px; border: none;
+            background: #0f172a; color: white; font-weight: 800; font-size: 0.9rem;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(15,23,42,0.2); transition: 0.3s;
+        }
+        .btn-save:active { transform: scale(0.98); }
+
+        .badge-update { font-size: 0.6rem; background: #fffbeb; color: #d97706; padding: 4px 8px; border-radius: 6px; margin-left: 5px; }
+
+        #loading-line {
+            position: fixed; top: 0; left: 0; width: 100%; height: 3px;
+            background: #2563eb; display: none; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loading-line"></div>
+
+<div class="container">
+    <div class="header">
+        <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-chevron-left"></i></a>
+        <h1>pengaturan</h1>
+    </div>
+
+    <div class="profile-card">
+        <div class="profile-img"><i class="fa-solid fa-user"></i></div>
+        <div class="profile-info">
+            <b id="display-name">memuat...</b>
+            <span id="display-role">status: user</span>
+        </div>
+    </div>
+
+    <div class="section-box">
+        <span class="section-title">data lengkap</span>
+        <div class="input-group">
+            <label>nama lengkap</label>
+            <input type="text" id="set-fullname" placeholder="masukkan nama baru">
+        </div>
+        <div class="input-group">
+            <label>nomor whatsapp</label>
+            <input type="number" id="set-phone" placeholder="628xxxx">
+        </div>
+        <button class="btn-save" onclick="updateData()">simpan perubahan</button>
+    </div>
+
+    <h2 style="font-size: 0.9rem; font-weight: 800; margin: 30px 0 15px 10px; color: #0f172a;">merchant</h2>
+    
+    <div class="section-box">
+        <span class="section-title">set nama toko</span>
+        <div class="input-group">
+            <label>tampil di produk</label>
+            <input type="text" id="set-shopname" placeholder="contoh: dika store">
+        </div>
+        <button class="btn-save" onclick="updateShopName()" style="background: #2563eb;">update nama toko</button>
+    </div>
+
+    <div class="section-box">
+        <span class="section-title">pembayaran & penarikan</span>
+        
+        <div class="input-group">
+            <label>create payment (dana)</label>
+            <input type="number" id="set-payment" placeholder="masukkan nomor dana">
+        </div>
+
+        <div class="input-group">
+            <label>metode penarikan <span class="badge-update">dana only</span></label>
+            <select disabled>
+                <option>DANA (aktif)</option>
+                <option>OVO (next update)</option>
+                <option>GOPAY (next update)</option>
+            </select>
+        </div>
+
+        <button class="btn-save" onclick="updatePayment()" style="background: #10b981;">simpan payment</button>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const currentToken = localStorage.getItem('sessionToken');
+    const loader = document.getElementById('loading-line');
+
+    function loadSettings() {
+        if (!currentToken) return window.location.href = 'login.html';
+
+        db.ref('users/' + currentToken).on('value', (snap) => {
+            if (snap.exists()) {
+                const data = snap.val();
+                document.getElementById('display-name').innerText = data.fullname || 'no name';
+                document.getElementById('display-role').innerText = 'status: ' + (data.role || 'user');
+                
+                // Isi form otomatis
+                document.getElementById('set-fullname').value = data.fullname || '';
+                document.getElementById('set-phone').value = data.phone || '';
+                document.getElementById('set-shopname').value = data.shopName || '';
+                document.getElementById('set-payment').value = data.paymentNumber || '';
+            }
+        });
+    }
+
+    async function updateData() {
+        const name = document.getElementById('set-fullname').value;
+        const phone = document.getElementById('set-phone').value;
+        if(!name) return alert('nama jangan kosong');
+
+        loader.style.display = 'block';
+        try {
+            await db.ref('users/' + currentToken).update({
+                fullname: name,
+                phone: phone
+            });
+            alert('data lengkap berhasil diupdate!');
+        } catch (e) { alert(e.message); }
+        loader.style.display = 'none';
+    }
+
+    async function updateShopName() {
+        const shop = document.getElementById('set-shopname').value;
+        if(!shop) return alert('nama toko jangan kosong');
+
+        loader.style.display = 'block';
+        try {
+            await db.ref('users/' + currentToken).update({ shopName: shop });
+            alert('nama toko diupdate!');
+        } catch (e) { alert(e.message); }
+        loader.style.display = 'none';
+    }
+
+    async function updatePayment() {
+        const payNum = document.getElementById('set-payment').value;
+        if(!payNum) return alert('isi nomor dana kamu');
+
+        loader.style.display = 'block';
+        try {
+            await db.ref('users/' + currentToken).update({ paymentNumber: payNum });
+            alert('payment dana berhasil di-set!');
+        } catch (e) { alert(e.message); }
+        loader.style.display = 'none';
+    }
+
+    window.onload = loadSettings;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>list produk</title>
+    <script src="../setting.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes fadein { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body { 
+            background: #f0f4f8; 
+            color: #1a1a1a; 
+            font-family: 'inter', sans-serif; 
+            margin: 0; 
+            text-transform: lowercase; 
+            overflow-x: hidden; /* solusi supaya layar ga geser-geser */
+            width: 100%;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0; z-index: 999;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .btn-back {
+            width: 42px; height: 42px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 15px;
+            color: #1e293b;
+        }
+
+        .content { padding: 15px; max-width: 500px; margin: 0 auto; }
+
+        /* search bar lebih rapi */
+        .search-wrapper {
+            background: white;
+            padding: 2px;
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            border: 1px solid #fff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .search-wrapper i { margin-left: 15px; color: #94a3b8; font-size: 0.9rem; }
+        .search-wrapper input {
+            width: 100%; padding: 14px 10px;
+            border: none; outline: none;
+            background: transparent; font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        /* slider iklan - style dashboard presisi */
+        .slider-container {
+            width: 100%;
+            height: 170px;
+            position: relative;
+            margin-bottom: 25px;
+            overflow: hidden;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .slider-wrapper {
+            display: flex;
+            width: 100%; height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .slide { min-width: 100%; height: 100%; position: relative; }
+        .slide img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+        .slide-text {
+            position: absolute; bottom: 0; left: 0; right: 0; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.8)); 
+            color: white; padding: 30px 20px 15px; 
+            font-size: 0.85rem; font-weight: 800;
+        }
+
+        /* kategori scroll modern */
+        .kat-section { margin-bottom: 20px; }
+        .label-kat {
+            font-size: 0.7rem; font-weight: 900; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-left: 5px; margin-bottom: 12px; display: block;
+        }
+        .kat-scroll {
+            display: flex; gap: 10px;
+            overflow-x: auto; padding: 5px;
+            margin: 0 -5px;
+        }
+        .kat-scroll::-webkit-scrollbar { display: none; }
+        .kat-pill {
+            padding: 10px 20px; background: white;
+            border-radius: 16px; font-size: 0.75rem;
+            font-weight: 800; white-space: nowrap;
+            cursor: pointer; border: 1px solid #fff;
+            transition: 0.3s; color: #64748b;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .kat-pill.active { background: #1a1a1a; color: white; border-color: #1a1a1a; transform: translateY(-2px); }
+
+        /* grid produk - rapi & simetris */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            animation: fadein 0.6s ease;
+        }
+        .p-card {
+            background: white; padding: 10px;
+            border-radius: 22px; border: 1px solid #fff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .p-card:active { transform: scale(0.96); }
+        .p-card img {
+            width: 100%; aspect-ratio: 1/1;
+            object-fit: cover; border-radius: 18px;
+            margin-bottom: 12px;
+            background: #f8fafc;
+        }
+        .p-tag { font-size: 0.6rem; font-weight: 900; color: #007bff; text-transform: uppercase; display: block; margin-left: 4px; }
+        .p-title { 
+            font-size: 0.8rem; font-weight: 800; color: #1e293b; 
+            display: block; height: 2.4em; overflow: hidden; 
+            margin: 5px 4px; line-height: 1.2;
+        }
+        .p-price { 
+            font-size: 0.95rem; font-weight: 900; color: #1a1a1a; 
+            display: block; margin: 8px 4px 5px; 
+        }
+
+        #loading-info { text-align: center; padding: 100px 0; color: #94a3b8; font-size: 0.8rem; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="btn-back" onclick="location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></div>
+        <span style="font-weight: 900; font-size: 1.1rem; letter-spacing: -0.5px;">list produk</span>
+    </div>
+
+    <div class="content">
+        <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="pencarian" placeholder="cari sesuatu..." oninput="jalankanFilter()">
+        </div>
+
+        <div id="slider-container" class="slider-container">
+            <div id="slider-wrapper" class="slider-wrapper"></div>
+        </div>
+
+        <div class="kat-section">
+            <span class="label-kat">kategori</span>
+            <div class="kat-scroll">
+                <div class="kat-pill active" onclick="setKategori('semua', this)">semua</div>
+                <div class="kat-pill" onclick="setKategori('AKUN', this)">akun</div>
+                <div class="kat-pill" onclick="setKategori('APP PREM', this)">app prem</div>
+                <div class="kat-pill" onclick="setKategori('E-BOOK', this)">e-book</div>
+                <div class="kat-pill" onclick="setKategori('PRODUK DIGITAL', this)">produk digital</div>
+                <div class="kat-pill" onclick="setKategori('LAIN NYA', this)">lain nya</div>
+            </div>
+        </div>
+
+        <div id="loading-info"><i class="fa-solid fa-spinner fa-spin"></i><br><br>menyiapkan produk...</div>
+        <div class="grid" id="product-grid"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+            databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "market-d978f",
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let masterProduk = [];
+        let filterSekarang = 'semua';
+        let currentSlide = 0;
+        let slideInterval;
+
+        // slider logic (fix presisi)
+        function initSlider() {
+            db.ref('banner_promo').on('value', (snap) => {
+                const wrapper = document.getElementById('slider-wrapper');
+                wrapper.innerHTML = "";
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const d = child.val();
+                        wrapper.innerHTML += `
+                            <div class="slide">
+                                <img src="${d.image_url}">
+                                <div class="slide-text">${d.title || ""}</div>
+                            </div>`;
+                    });
+                    mulaiAutoSlide();
+                }
+            });
+        }
+
+        function mulaiAutoSlide() {
+            if(slideInterval) clearInterval(slideInterval);
+            slideInterval = setInterval(() => {
+                const wrapper = document.getElementById('slider-wrapper');
+                const slides = document.querySelectorAll('.slide');
+                if(slides.length <= 1) return;
+                currentSlide = (currentSlide + 1) % slides.length;
+                wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+            }, 4000);
+        }
+
+        // produk logic
+        function loadProduk() {
+            db.ref('products').on('value', (snap) => {
+                const grid = document.getElementById('product-grid');
+                const info = document.getElementById('loading-info');
+                masterProduk = [];
+                grid.innerHTML = "";
+                
+                if (snap.exists()) {
+                    info.style.display = 'none';
+                    snap.forEach(child => { masterProduk.push(child.val()); });
+                    jalankanFilter();
+                } else {
+                    info.innerHTML = "belum ada produk tersedia.";
+                }
+            });
+        }
+
+        function setKategori(kat, el) {
+            filterSekarang = kat;
+            document.querySelectorAll('.kat-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            jalankanFilter();
+        }
+
+        function jalankanFilter() {
+            const cari = document.getElementById('pencarian').value.toLowerCase();
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = "";
+
+            const hasil = masterProduk.filter(p => {
+                const matchKat = filterSekarang === 'semua' || p.kategori === filterSekarang;
+                const matchName = p.nama.toLowerCase().includes(cari);
+                return matchKat && matchName;
+            });
+
+            if(hasil.length === 0) {
+                grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 40px; color: #94a3b8; font-size: 0.8rem;">produk tidak ditemukan.</div>';
+                return;
+            }
+
+            hasil.forEach(p => {
+                grid.innerHTML += `
+                    <div class="p-card" onclick="location.href='produk-detail.html?id=${p.productId}'">
+                        <img src="${p.foto || ''}">
+                        <div style="padding: 0 2px;">
+                            <span class="p-tag">${p.kategori}</span>
+                            <span class="p-title">${p.nama}</span>
+                            <span class="p-price">rp ${(p.harga || 0).toLocaleString('id-ID')}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.onload = () => {
+            initSlider();
+            loadProduk();
+        };
+    </script>
+</body>
+</html>

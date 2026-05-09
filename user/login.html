@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+        
+        body { 
+            background: #f0f4f8; 
+            background-image: radial-gradient(#d1d9e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #1a1a1a; 
+            font-family: 'inter', sans-serif; 
+            margin: 0; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-transform: lowercase;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(15px);
+            width: 100%;
+            max-width: 350px;
+            padding: 40px 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            border: 1px solid #fff;
+            animation: fadein 0.8s ease;
+            text-align: center;
+        }
+
+        h2 { font-weight: 800; margin-bottom: 30px; color: #1e293b; letter-spacing: -1px; }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-left: 15px;
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            outline: none;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #007bff;
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.05);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+        /* Popup Style */
+        #popup {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 20px;
+            background: #fff;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            font-weight: 700;
+            font-size: 0.85rem;
+            z-index: 10000;
+            transition: 0.5s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .success { color: #10b981; border: 1px solid #10b981; }
+        .error { color: #ef4444; border: 1px solid #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div id="popup"></div>
+
+    <div class="login-card">
+        <h2>masuk akun.</h2>
+        
+        <div class="input-group">
+            <label>email</label>
+            <input type="email" id="email" placeholder="email@gmail.com">
+        </div>
+
+        <div class="input-group">
+            <label>password</label>
+            <input type="password" id="pass" placeholder="••••••••">
+        </div>
+
+        <button class="btn-login" onclick="handle_login()">masuk sekarang</button>
+        
+        <p style="margin-top: 25px; font-size: 0.75rem; color: #94a3b8; font-weight: 600;">
+            belum punya akun? <a href="register.html" style="color: #007bff; text-decoration: none;">daftar</a>
+        </p>
+    </div>
+
+    <script>
+        function showpopup(msg, isSuccess = false) {
+            const p = document.getElementById('popup');
+            p.innerText = msg;
+            p.className = isSuccess ? 'success' : 'error';
+            p.style.top = '30px';
+            setTimeout(() => { p.style.top = '-100px'; }, 3000);
+        }
+
+        async function handle_login() {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('pass').value.trim();
+
+            if (!email || !pass) {
+                showpopup("isi dulu email dan passwordnya");
+                return;
+            }
+
+            // LOGIKA KHUSUS ADMIN
+            if (email === "admin@g.a" && pass === "admin6767") {
+                localStorage.setItem('sessionToken', 'admin-super-session');
+                localStorage.setItem('userRole', 'admin');
+                showpopup("selamat datang admin", true);
+                setTimeout(() => { location.href = "../admin/dashboard.html"; }, 1500);
+                return; 
+            }
+
+            // LOGIKA USER BIASA (VIA API)
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, pass })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('sessionToken', result.sessionToken);
+                    localStorage.setItem('userRole', 'user');
+                    showpopup("berhasil masuk!", true);
+                    setTimeout(() => { location.href = "dashboard.html"; }, 1500);
+                } else {
+                    showpopup(result.message || "akun tidak ditemukan");
+                }
+            } catch (e) {
+                showpopup("koneksi bermasalah kak");
+            }
+        }
+    </script>
+</body>
+</html>
