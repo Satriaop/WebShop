@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>admin — verifikasi deposit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: #0f172a;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            text-transform: lowercase;
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        /* ── SIDEBAR / TOPBAR ── */
+        .admin-topbar {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .admin-topbar .logo {
+            font-weight: 800;
+            font-size: 1rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-topbar .logo i { color: #6366f1; }
+        .admin-badge {
+            background: #6366f1;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* ── TOAST ── */
+        #toast-wrapper {
+            position: fixed;
+            top: 76px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+            max-width: 320px;
+        }
+        .toast {
+            background: #1e293b;
+            color: white;
+            padding: 14px 16px;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            pointer-events: all;
+            border-left: 4px solid #6366f1;
+        }
+        .toast.success { border-color: #22c55e; }
+        .toast.error { border-color: #ef4444; }
+        .toast.warning { border-color: #f59e0b; }
+        .toast.out { animation: toastOut 0.3s ease forwards; }
+        .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+        .toast-body .t-title { font-weight: 800; margin-bottom: 2px; }
+        .toast-body .t-msg { font-weight: 600; opacity: 0.7; font-size: 0.72rem; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(20px); }
+        }
+
+        /* ── CONTENT ── */
+        .page-content { padding: 24px; max-width: 760px; margin: 0 auto; }
+
+        .page-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .page-heading h2 { margin: 0; font-size: 1.2rem; font-weight: 800; color: white; }
+
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .stat-chip {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #94a3b8;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+        .stat-chip b { display: block; font-size: 1.3rem; font-weight: 800; color: white; margin-bottom: 2px; }
+
+        /* ── FILTER TABS ── */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 0;
+        }
+        .tab-btn {
+            padding: 10px 18px;
+            border-radius: 10px 10px 0 0;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-btn:hover { color: #94a3b8; }
+        .tab-btn.active { color: #6366f1; border-bottom-color: #6366f1; }
+
+        /* ── EMPTY STATE ── */
+        #empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #475569;
+            display: none;
+        }
+        #empty-state i { font-size: 2.5rem; margin-bottom: 12px; display: block; color: #334155; }
+        #empty-state p { font-weight: 700; font-size: 0.85rem; }
+
+        /* ── DEPOSIT CARD ── */
+        .depo-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 14px;
+            animation: fadeUp 0.4s ease;
+            transition: border-color 0.3s;
+        }
+        .depo-card:hover { border-color: #475569; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* status dot */
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+        .status-badge.pending { background: #422006; color: #fbbf24; }
+        .status-badge.sukses { background: #14532d; color: #4ade80; }
+        .status-badge.ditolak { background: #450a0a; color: #f87171; }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; }
+        .status-dot.pending { background: #fbbf24; animation: pulse 1.5s infinite; }
+        .status-dot.sukses { background: #4ade80; }
+        .status-dot.ditolak { background: #f87171; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .depo-id { font-size: 0.65rem; color: #475569; font-weight: 700; }
+
+        /* info rows */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .info-item { background: #0f172a; border-radius: 10px; padding: 10px 14px; }
+        .info-item .i-label { font-size: 0.65rem; font-weight: 700; color: #475569; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-item .i-val { font-size: 0.85rem; font-weight: 800; color: #e2e8f0; }
+        .info-item .i-val.green { color: #4ade80; }
+        .info-item .i-val.purple { color: #a78bfa; }
+
+        /* method icon */
+        .method-icon { margin-right: 4px; }
+
+        /* proof image */
+        .proof-section { margin-bottom: 14px; }
+        .proof-label { font-size: 0.65rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .proof-img {
+            width: 100%;
+            max-width: 180px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid #334155;
+            transition: 0.2s;
+        }
+        .proof-img:hover { border-color: #6366f1; transform: scale(1.02); }
+
+        /* time */
+        .time-info {
+            font-size: 0.68rem;
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* actions */
+        .action-row { display: flex; gap: 10px; }
+        .btn-reject {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: 2px solid #450a0a;
+            color: #f87171;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.82rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-reject:hover { background: #450a0a; }
+        .btn-acc {
+            flex: 2;
+            padding: 12px;
+            background: #16a34a;
+            border: none;
+            color: white;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.82rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(22,163,74,0.3);
+        }
+        .btn-acc:hover { background: #15803d; }
+        .btn-acc:disabled, .btn-reject:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ── REJECT MODAL ── */
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 28px;
+            width: 100%;
+            max-width: 380px;
+            animation: fadeUp 0.3s ease;
+        }
+        .modal-title { font-weight: 800; font-size: 1rem; color: white; margin-bottom: 6px; }
+        .modal-sub { font-size: 0.78rem; color: #64748b; font-weight: 600; margin-bottom: 20px; }
+        .modal-box textarea {
+            width: 100%;
+            border-radius: 14px;
+            border: 2px solid #334155;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 14px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            resize: none;
+            min-height: 100px;
+            transition: 0.2s;
+            text-transform: lowercase;
+        }
+        .modal-box textarea:focus { outline: none; border-color: #6366f1; }
+        .modal-btn-row { display: flex; gap: 10px; margin-top: 16px; }
+        .modal-cancel {
+            flex: 1; padding: 13px; background: transparent;
+            border: 2px solid #334155; color: #94a3b8;
+            border-radius: 12px; font-weight: 800; cursor: pointer; font-family: inherit;
+            transition: 0.2s;
+        }
+        .modal-cancel:hover { background: #334155; }
+        .modal-confirm-reject {
+            flex: 2; padding: 13px; background: #dc2626;
+            border: none; color: white;
+            border-radius: 12px; font-weight: 800; cursor: pointer; font-family: inherit;
+            transition: 0.2s;
+        }
+        .modal-confirm-reject:hover { background: #b91c1c; }
+
+        /* ── PROOF LIGHTBOX ── */
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        #lightbox.show { display: flex; }
+        #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; }
+        #lightbox-close {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px; height: 36px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast-wrapper"></div>
+
+<!-- TOPBAR -->
+<div class="admin-topbar">
+    <div class="logo">
+        <i class="fa-solid fa-shield-halved"></i>
+        panel admin
+    </div>
+    <span class="admin-badge">VERIFIKASI DEPOSIT</span>
+</div>
+
+<div class="page-content">
+    <div class="page-heading">
+        <h2>🔔 antrean deposit</h2>
+        <div style="font-size:0.72rem; color:#475569; font-weight:700;">update real-time · <span id="last-update">–</span></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+        <div class="stat-chip"><b id="count-pending">0</b>menunggu</div>
+        <div class="stat-chip"><b id="count-sukses">0</b>diterima</div>
+        <div class="stat-chip"><b id="count-ditolak">0</b>ditolak</div>
+        <div class="stat-chip"><b id="total-nominal">0</b>total pending (rb)</div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="setTab('pending', this)">⏳ pending</button>
+        <button class="tab-btn" onclick="setTab('sukses', this)">✅ diterima</button>
+        <button class="tab-btn" onclick="setTab('ditolak', this)">❌ ditolak</button>
+        <button class="tab-btn" onclick="setTab('all', this)">🗂 semua</button>
+    </div>
+
+    <div id="empty-state">
+        <i class="fa-solid fa-inbox"></i>
+        <p>tidak ada deposit di sini</p>
+    </div>
+
+    <div id="list-depo"></div>
+</div>
+
+<!-- REJECT MODAL -->
+<div id="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title">❌ tolak deposit</div>
+        <div class="modal-sub">berikan alasan penolakan agar user tahu</div>
+        <textarea id="reject-reason" placeholder="contoh: bukti tidak jelas, nominal tidak sesuai, dll..."></textarea>
+        <div class="modal-btn-row">
+            <button class="modal-cancel" onclick="closeModal()">batal</button>
+            <button class="modal-confirm-reject" onclick="confirmReject()">tolak deposit</button>
+        </div>
+    </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+    <button id="lightbox-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    <img id="lightbox-img" src="" alt="bukti">
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+    /* ── FIREBASE ── */
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    /* ── STATE ── */
+    let currentTab = 'pending';
+    let pendingRejectId = null;
+    let allDeposits = {};
+
+    /* ── TOAST ── */
+    function showToast(title, msg, type = 'info', duration = 4000) {
+        const wrapper = document.getElementById('toast-wrapper');
+        const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `
+            <div class="toast-icon">${icons[type]}</div>
+            <div class="toast-body">
+                <div class="t-title">${title}</div>
+                <div class="t-msg">${msg}</div>
+            </div>`;
+        wrapper.appendChild(el);
+        setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, duration);
+    }
+
+    /* ── TABS ── */
+    function setTab(tab, el) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        renderList();
+    }
+
+    /* ── METHOD ICON ── */
+    function getMethodIcon(method) {
+        const icons = {
+            'dana': '💙', 'gopay': '💚', 'ovo': '💜', 'shopeepay': '🧡',
+            'bank bri': '🏦', 'bank bni': '🏦', 'bank bca': '🏦', 'bank mandiri': '🏦', 'linkaja': '❤️'
+        };
+        const key = (method || '').toLowerCase();
+        for (const k in icons) if (key.includes(k.split(' ').pop())) return icons[k];
+        return '💳';
+    }
+
+    /* ── FORMAT TIME ── */
+    function formatWaktu(iso) {
+        if (!iso) return '–';
+        try {
+            return new Date(iso).toLocaleString('id-ID', {
+                weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        } catch { return iso; }
+    }
+
+    /* ── RENDER LIST ── */
+    function renderList() {
+        const container = document.getElementById('list-depo');
+        const empty = document.getElementById('empty-state');
+        container.innerHTML = '';
+
+        const items = Object.values(allDeposits).filter(d => {
+            if (currentTab === 'all') return true;
+            return d.status === currentTab;
+        });
+
+        // sort newest first
+        items.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+
+        if (items.length === 0) {
+            empty.style.display = 'block';
+            return;
+        }
+        empty.style.display = 'none';
+
+        items.forEach(d => {
+            const card = document.createElement('div');
+            card.className = 'depo-card';
+            card.id = 'card-' + d.depoId;
+
+            const isPending = d.status === 'pending';
+            const isSukses = d.status === 'sukses';
+            const methodIcon = getMethodIcon(d.metodePembayaran);
+
+            card.innerHTML = `
+                <div class="status-row">
+                    <span class="status-badge ${d.status}">
+                        <span class="status-dot ${d.status}"></span>
+                        ${d.status === 'pending' ? 'menunggu' : d.status === 'sukses' ? 'diterima' : 'ditolak'}
+                    </span>
+                    <span class="depo-id">${d.depoId}</span>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="i-label">nominal</div>
+                        <div class="i-val green">rp ${parseInt(d.nominal).toLocaleString('id-ID')}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="i-label">metode</div>
+                        <div class="i-val purple">
+                            <span class="method-icon">${methodIcon}</span>${d.metodePembayaran || '–'}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="i-label">user token</div>
+                        <div class="i-val" style="font-size:0.72rem; color:#64748b;">${(d.token || '').substring(0, 16)}...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="i-label">status</div>
+                        <div class="i-val" style="font-size:0.78rem;">${d.status === 'ditolak' ? '❌ ' + (d.alasan || 'tanpa alasan') : d.status === 'sukses' ? '✅ saldo masuk' : '⏳ proses'}</div>
+                    </div>
+                </div>
+
+                <div class="time-info">
+                    <i class="fa-regular fa-clock"></i>
+                    ${d.waktuTransaksi || formatWaktu(d.createdAt)}
+                </div>
+
+                <div class="proof-section">
+                    <div class="proof-label">bukti pembayaran</div>
+                    <img src="${d.imageUrl}" class="proof-img" alt="bukti" onclick="openLightbox('${d.imageUrl}')">
+                </div>
+
+                ${isPending ? `
+                <div class="action-row" id="actions-${d.depoId}">
+                    <button class="btn-reject" id="btn-reject-${d.depoId}" onclick="openRejectModal('${d.depoId}')">
+                        <i class="fa-solid fa-xmark"></i> tolak
+                    </button>
+                    <button class="btn-acc" id="btn-acc-${d.depoId}" onclick="accDeposit('${d.depoId}', '${d.token}', ${d.nominal})">
+                        <i class="fa-solid fa-check"></i> konfirmasi saldo masuk
+                    </button>
+                </div>` : ''}
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    /* ── LOAD REALTIME ── */
+    function loadDeposits() {
+        db.ref('pending_deposit').on('value', (snap) => {
+            allDeposits = {};
+            let countPending = 0, countSukses = 0, countDitolak = 0, totalNominalPending = 0;
+
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    const d = child.val();
+                    allDeposits[d.depoId] = d;
+                    if (d.status === 'pending') { countPending++; totalNominalPending += parseInt(d.nominal || 0); }
+                    else if (d.status === 'sukses') countSukses++;
+                    else if (d.status === 'ditolak') countDitolak++;
+                });
+            }
+
+            // update stats
+            document.getElementById('count-pending').innerText = countPending;
+            document.getElementById('count-sukses').innerText = countSukses;
+            document.getElementById('count-ditolak').innerText = countDitolak;
+            document.getElementById('total-nominal').innerText = (totalNominalPending / 1000).toLocaleString('id-ID', {maximumFractionDigits: 0});
+            document.getElementById('last-update').innerText = new Date().toLocaleTimeString('id-ID');
+
+            renderList();
+        });
+    }
+
+    /* ── ACC DEPOSIT ── */
+    async function accDeposit(depoId, token, nominal) {
+        const btnAcc = document.getElementById('btn-acc-' + depoId);
+        const btnRej = document.getElementById('btn-reject-' + depoId);
+        if (!confirm(`konfirmasi saldo rp ${parseInt(nominal).toLocaleString('id-ID')} masuk ke user?`)) return;
+
+        btnAcc.disabled = true;
+        btnRej.disabled = true;
+        btnAcc.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> memproses...';
+
+        try {
+            const userRef = db.ref('users/' + token);
+            const uSnap = await userRef.get();
+            if (!uSnap.exists()) throw new Error('user tidak ditemukan');
+
+            const saldoSkrg = parseInt(uSnap.val().balance || 0);
+            await userRef.update({ balance: saldoSkrg + parseInt(nominal) });
+            await db.ref('pending_deposit/' + depoId).update({
+                status: 'sukses',
+                processedAt: new Date().toISOString()
+            });
+
+            showToast('deposit diterima ✅', `rp ${parseInt(nominal).toLocaleString('id-ID')} berhasil ditambahkan`, 'success');
+        } catch (e) {
+            showToast('gagal memproses', e.message, 'error');
+            btnAcc.disabled = false;
+            btnRej.disabled = false;
+            btnAcc.innerHTML = '<i class="fa-solid fa-check"></i> konfirmasi saldo masuk';
+        }
+    }
+
+    /* ── REJECT MODAL ── */
+    function openRejectModal(depoId) {
+        pendingRejectId = depoId;
+        document.getElementById('reject-reason').value = '';
+        document.getElementById('modal-overlay').classList.add('show');
+    }
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('show');
+        pendingRejectId = null;
+    }
+
+    async function confirmReject() {
+        const alasan = document.getElementById('reject-reason').value.trim();
+        if (!alasan) { showToast('isi alasan dulu', 'alasan penolakan wajib diisi', 'warning'); return; }
+        if (!pendingRejectId) return;
+
+        const depoId = pendingRejectId;
+        closeModal();
+
+        try {
+            await db.ref('pending_deposit/' + depoId).update({
+                status: 'ditolak',
+                alasan,
+                rejectedAt: new Date().toISOString()
+            });
+            showToast('deposit ditolak', `alasan: ${alasan}`, 'error');
+        } catch (e) {
+            showToast('gagal', e.message, 'error');
+        }
+    }
+
+    /* ── LIGHTBOX ── */
+    function openLightbox(url) {
+        document.getElementById('lightbox-img').src = url;
+        document.getElementById('lightbox').classList.add('show');
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('show');
+    }
+
+    /* ── INIT ── */
+    window.onload = loadDeposits;
+</script>
+</body>
+</html>
