@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">API Documentation</title>
+    <script src="../setting.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700;800&display=swap');
+
+        :root {
+            --primary: #3b82f6;
+            --primary-light: #eff6ff;
+            --green: #10b981;
+            --green-light: #ecfdf5;
+            --orange: #f59e0b;
+            --orange-light: #fffbeb;
+            --red: #ef4444;
+            --bg: #ffffff;
+            --card-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --code-bg: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-weight: 800;
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+            text-transform: lowercase;
+        }
+        .header p {
+            color: var(--text-muted);
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+
+        /* --- TOC --- */
+        .toc {
+            background: var(--primary-light);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 40px;
+        }
+        .toc h3 {
+            margin: 0 0 12px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
+        .toc ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+        .toc li {
+            margin-bottom: 6px;
+        }
+        .toc a {
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .toc a:hover { text-decoration: underline; }
+
+        /* --- API CARD SECTION --- */
+        .api-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 30px;
+        }
+
+        .method-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tag-get {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.75rem;
+        }
+
+        .tag-post {
+            background: var(--green);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.75rem;
+        }
+
+        .url-path {
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        /* --- DETAILS TABLE --- */
+        h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            margin-top: 30px;
+        }
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 15px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .param-name {
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            color: #d946ef;
+        }
+
+        .param-desc { color: var(--text-muted); }
+
+        /* --- CODE BLOCK --- */
+        .response-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        pre {
+            margin: 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+        }
+
+        .json-key { color: #7dd3fc; }
+        .json-string { color: #a5b4fc; }
+        .json-num { color: #f472b6; }
+        .json-bool { color: #34d399; }
+
+        /* --- INFO NOTES --- */
+        .note {
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 0.875rem;
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .note-blue { background: var(--primary-light); border: 1px solid #bfdbfe; color: #1d4ed8; }
+        .note-green { background: var(--green-light); border: 1px solid #a7f3d0; color: #065f46; }
+        .note-orange { background: var(--orange-light); border: 1px solid #fde68a; color: #92400e; }
+
+        /* --- DIVIDER --- */
+        .section-divider {
+            border: none;
+            border-top: 2px solid var(--border);
+            margin: 50px 0 40px;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        /* --- BUTTONS --- */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            transition: 0.2s;
+            border: 1px solid var(--border);
+        }
+        .btn-back:hover { background: #f1f5f9; }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* --- ANCHOR OFFSET --- */
+        [id] { scroll-margin-top: 24px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> <span id="shop-name">market</span> api</h1>
+            <p>Dokumentasi teknis untuk integrasi pihak ketiga.</p>
+        </header>
+
+        <!-- AUTH INFO -->
+        <section style="margin-bottom: 30px;">
+            <h2 style="font-size: 1.2rem;">Otentikasi</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Semua permintaan API memerlukan parameter <code>key</code> berisi <strong>API Key</strong> kamu. Bersifat rahasia — jangan dibagikan atau disematkan di kode yang bisa diakses publik.
+            </p>
+        </section>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+            <h3><i class="fa-solid fa-list"></i> &nbsp;Daftar Endpoint</h3>
+            <ul>
+                <li><a href="#ep-profile">GET /api/profile — Informasi Akun</a></li>
+                <li><a href="#ep-kategori">GET /api/listkategori — Daftar Kategori Produk</a></li>
+                <li><a href="#ep-produk">GET /api/listproduk — Daftar Produk &amp; Stok</a></li>
+                <li><a href="#ep-order">POST /api/order — Buat Pesanan</a></li>
+            </ul>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ENDPOINT 1: PROFILE -->
+        <!-- ============================================================ -->
+        <p class="section-label">Akun</p>
+        <div class="api-card" id="ep-profile">
+            <div class="method-bar">
+                <span class="tag-get">GET</span>
+                <span class="url-path">/api/profile</span>
+            </div>
+            <p style="margin-top: 0; color: var(--text-main); font-weight: 500;">Mengambil detail informasi akun yang terhubung dengan API Key.</p>
+
+            <h3>Parameter Query</h3>
+            <div class="param-grid">
+                <div class="param-name">key</div>
+                <div class="param-desc">
+                    <strong>String (Required)</strong><br>
+                    API Key unik kamu untuk memverifikasi identitas permintaan.
+                </div>
+            </div>
+
+            <h3>Respon Berhasil (200 OK)</h3>
+            <div class="response-block">
+<pre>
+{
+  "<span class="json-key">status</span>": <span class="json-bool">true</span>,
+  "<span class="json-key">data</span>": {
+    "<span class="json-key">username</span>": <span class="json-string">"dikadev"</span>,
+    "<span class="json-key">phone</span>": <span class="json-string">"083121495921"</span>,
+    "<span class="json-key">role</span>": <span class="json-string">"owner"</span>,
+    "<span class="json-key">apiKey</span>": <span class="json-string">"sk-0277..."</span>
+  }
+}</pre>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- ============================================================ -->
+        <!-- ENDPOINT 2: LIST KATEGORI -->
+        <!-- ============================================================ -->
+        <p class="section-label">Produk</p>
+        <div class="api-card" id="ep-kategori">
+            <div class="method-bar">
+                <span class="tag-get">GET</span>
+                <span class="url-path">/api/listkategori</span>
+            </div>
+            <p style="margin-top: 0; color: var(--text-main); font-weight: 500;">Mengambil seluruh daftar kategori produk yang tersedia.</p>
+
+            <h3>Parameter Query</h3>
+            <div class="param-grid">
+                <div class="param-name">key</div>
+                <div class="param-desc">
+                    <strong>String (Required)</strong><br>
+                    API Key kamu.
+                </div>
+            </div>
+
+            <div class="note note-green">
+                <i class="fa-solid fa-circle-check" style="margin-top:2px;"></i>
+                <span>Jika belum ada produk, endpoint ini tetap mengembalikan <code>200 OK</code> dengan <code>data: []</code> — tidak akan 404.</span>
+            </div>
+
+            <h3>Respon Berhasil (200 OK)</h3>
+            <div class="response-block">
+<pre>
+{
+  "<span class="json-key">status</span>": <span class="json-bool">true</span>,
+  "<span class="json-key">total</span>": <span class="json-num">3</span>,
+  "<span class="json-key">data</span>": [
+    <span class="json-string">"GAME"</span>,
+    <span class="json-string">"STREAMING"</span>,
+    <span class="json-string">"VOUCHER"</span>
+  ]
+}</pre>
+            </div>
+
+            <h3>Respon Kosong (200 OK)</h3>
+            <div class="response-block">
+<pre>
+{
+  "<span class="json-key">status</span>": <span class="json-bool">true</span>,
+  "<span class="json-key">total</span>": <span class="json-num">0</span>,
+  "<span class="json-key">data</span>": []
+}</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ENDPOINT 3: LIST PRODUK -->
+        <!-- ============================================================ -->
+        <div class="api-card" id="ep-produk">
+            <div class="method-bar">
+                <span class="tag-get">GET</span>
+                <span class="url-path">/api/listproduk</span>
+            </div>
+            <p style="margin-top: 0; color: var(--text-main); font-weight: 500;">Mengambil daftar produk beserta jumlah stok yang tersedia. Parameter <code>kategori</code> bersifat opsional — jika tidak diisi, semua produk dikembalikan.</p>
+
+            <h3>Parameter Query</h3>
+            <div class="param-grid">
+                <div class="param-name">key</div>
+                <div class="param-desc">
+                    <strong>String (Required)</strong><br>
+                    API Key kamu.
+                </div>
+                <div class="param-name">kategori</div>
+                <div class="param-desc">
+                    <strong>String (Optional)</strong><br>
+                    Filter produk berdasarkan kategori (contoh: <code>GAME</code>, <code>STREAMING</code>). Tidak case-sensitive. Jika dikosongkan, semua produk dikembalikan.
+                </div>
+            </div>
+
+            <div class="note note-green">
+                <i class="fa-solid fa-circle-check" style="margin-top:2px;"></i>
+                <span>Jika tidak ada produk yang cocok, endpoint mengembalikan <code>200 OK</code> dengan <code>data: []</code> — bukan 404.</span>
+            </div>
+
+            <div class="note note-blue">
+                <i class="fa-solid fa-circle-info" style="margin-top:2px;"></i>
+                <span>Field <code>stok</code> pada setiap produk menunjukkan jumlah unit yang masih tersedia saat ini.</span>
+            </div>
+
+            <h3>Respon Berhasil (200 OK)</h3>
+            <div class="response-block">
+<pre>
+{
+  "<span class="json-key">status</span>": <span class="json-bool">true</span>,
+  "<span class="json-key">kategori</span>": <span class="json-string">"GAME"</span>,
+  "<span class="json-key">total</span>": <span class="json-num">2</span>,
+  "<span class="json-key">data</span>": [
+    {
+      "<span class="json-key">productId</span>": <span class="json-string">"prod_abc123"</span>,
+      "<span class="json-key">nama</span>": <span class="json-string">"Mobile Legends 100 Diamond"</span>,
+      "<span class="json-key">harga</span>": <span class="json-num">20000</span>,
+      "<span class="json-key">kategori</span>": <span class="json-string">"GAME"</span>,
+      "<span class="json-key">stok</span>": <span class="json-num">15</span>,
+      "<span class="json-key">deskripsi</span>": <span class="json-string">"Top up diamond ML"</span>
+    }
+  ]
+}</pre>
+            </div>
+
+            <h3>Contoh Request</h3>
+            <div class="response-block">
+<pre><span style="color:#94a3b8;"># Semua produk</span>
+GET /api/listproduk?key=sk-xxxx
+
+<span style="color:#94a3b8;"># Filter per kategori</span>
+GET /api/listproduk?key=sk-xxxx&kategori=GAME</pre>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- ============================================================ -->
+        <!-- ENDPOINT 4: ORDER -->
+        <!-- ============================================================ -->
+        <p class="section-label">Transaksi</p>
+        <div class="api-card" id="ep-order">
+            <div class="method-bar">
+                <span class="tag-post">POST</span>
+                <span class="url-path">/api/order</span>
+            </div>
+            <p style="margin-top: 0; color: var(--text-main); font-weight: 500;">Membuat pesanan baru. Cukup kirim <strong>API Key</strong> beserta detail produk — tidak perlu token tambahan.</p>
+
+            <div class="note note-orange">
+                <i class="fa-solid fa-triangle-exclamation" style="margin-top:2px;"></i>
+                <span>Gunakan metode <strong>POST</strong> dengan body <strong>JSON</strong>. Pastikan header <code>Content-Type: application/json</code> disertakan.</span>
+            </div>
+
+            <h3>Request Body (JSON)</h3>
+            <div class="param-grid">
+                <div class="param-name">key</div>
+                <div class="param-desc">
+                    <strong>String (Required)</strong><br>
+                    API Key kamu sebagai identitas &amp; otorisasi.
+                </div>
+                <div class="param-name">productId</div>
+                <div class="param-desc">
+                    <strong>String (Required)</strong><br>
+                    ID produk yang ingin dibeli (dari endpoint <code>/api/listproduk</code>).
+                </div>
+                <div class="param-name">jumlah</div>
+                <div class="param-desc">
+                    <strong>Number (Required)</strong><br>
+                    Jumlah unit yang dipesan. Harus lebih dari 0 dan tidak melebihi stok tersedia.
+                </div>
+                <div class="param-name">catatan</div>
+                <div class="param-desc">
+                    <strong>String (Optional)</strong><br>
+                    Catatan tambahan untuk pesanan (misal: user ID game, nomor akun, dll).
+                </div>
+            </div>
+
+            <h3>Contoh Request</h3>
+            <div class="response-block">
+<pre>POST /api/order
+Content-Type: application/json
+
+{
+  "<span class="json-key">key</span>": <span class="json-string">"sk-xxxxxxxxxxxx"</span>,
+  "<span class="json-key">productId</span>": <span class="json-string">"prod_abc123"</span>,
+  "<span class="json-key">jumlah</span>": <span class="json-num">1</span>,
+  "<span class="json-key">catatan</span>": <span class="json-string">"UserID: 123456789"</span>
+}</pre>
+            </div>
+
+            <h3>Respon Berhasil (200 OK)</h3>
+            <div class="response-block">
+<pre>
+{
+  "<span class="json-key">status</span>": <span class="json-bool">true</span>,
+  "<span class="json-key">message</span>": <span class="json-string">"pesanan berhasil dibuat"</span>,
+  "<span class="json-key">data</span>": {
+    "<span class="json-key">orderId</span>": <span class="json-string">"ord_20260510_xyz"</span>,
+    "<span class="json-key">productId</span>": <span class="json-string">"prod_abc123"</span>,
+    "<span class="json-key">jumlah</span>": <span class="json-num">1</span>,
+    "<span class="json-key">total</span>": <span class="json-num">20000</span>,
+    "<span class="json-key">status</span>": <span class="json-string">"pending"</span>,
+    "<span class="json-key">createdAt</span>": <span class="json-string">"2026-05-10T10:30:00.000Z"</span>
+  }
+}</pre>
+            </div>
+
+            <h3>Respon Error</h3>
+            <div class="response-block">
+<pre><span style="color:#94a3b8;">// 401 — API Key tidak valid</span>
+{ "<span class="json-key">status</span>": <span class="json-bool">false</span>, "<span class="json-key">message</span>": <span class="json-string">"api key tidak valid"</span> }
+
+<span style="color:#94a3b8;">// 400 — Produk tidak ditemukan</span>
+{ "<span class="json-key">status</span>": <span class="json-bool">false</span>, "<span class="json-key">message</span>": <span class="json-string">"produk tidak ditemukan"</span> }
+
+<span style="color:#94a3b8;">// 400 — Stok tidak cukup</span>
+{ "<span class="json-key">status</span>": <span class="json-bool">false</span>, "<span class="json-key">message</span>": <span class="json-string">"stok tidak mencukupi"</span> }
+
+<span style="color:#94a3b8;">// 500 — Server error</span>
+{ "<span class="json-key">status</span>": <span class="json-bool">false</span>, "<span class="json-key">message</span>": <span class="json-string">"terjadi kesalahan pada server"</span> }</pre>
+            </div>
+        </div>
+
+        <a href="dashboard.html" class="btn-back">
+            <i class="fa-solid fa-chevron-left"></i> Kembali ke Dashboard
+        </a>
+
+        <footer>
+            &copy; 2026 <span id="footer-name">system</span> &bull; API Documentation v1.1.0
+        </footer>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const name = (typeof settings !== 'undefined' && settings.namatoko) ? settings.namatoko : "market";
+            document.getElementById('shop-name').innerText = name;
+            document.getElementById('footer-name').innerText = name;
+            document.getElementById('page-title').innerText = name + " - API Docs";
+        }
+    </script>
+</body>
+</html>
