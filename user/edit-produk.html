@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>edit produk</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+        @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: #f0f4f8; color: #1a1a1a; font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0; text-transform: lowercase; overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.92); backdrop-filter: blur(16px);
+            height: 68px; display: flex; align-items: center; padding: 0 18px;
+            position: sticky; top: 0; z-index: 999; border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .btn-back {
+            width: 42px; height: 42px; background: white; border: 1px solid #e2e8f0;
+            border-radius: 13px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; margin-right: 14px; color: #1e293b;
+        }
+        .header-title { font-weight: 900; font-size: 1.05rem; }
+
+        .content { padding: 16px; max-width: 500px; margin: 0 auto; }
+
+        /* PRODUCT GRID */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; animation: fadein 0.4s ease; }
+        .p-card {
+            background: white; padding: 10px; border-radius: 20px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04); cursor: pointer; transition: 0.2s;
+            border: 2px solid transparent; position: relative;
+        }
+        .p-card:hover { border-color: #6366f1; transform: translateY(-2px); }
+        .p-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 14px; margin-bottom: 8px; background: #f8fafc; }
+        .p-card-name { font-size: 0.78rem; font-weight: 800; color: #1e293b; display: block; }
+        .p-card-price { font-size: 0.88rem; font-weight: 900; color: #6366f1; }
+        .p-card-badge {
+            position: absolute; top: 14px; left: 14px;
+            background: #6366f1; color: white; font-size: 0.58rem; font-weight: 800;
+            padding: 3px 8px; border-radius: 8px; letter-spacing: 0.5px;
+        }
+        .stok-chip {
+            display: inline-block; background: #f0fdf4; color: #16a34a;
+            font-size: 0.62rem; font-weight: 800; padding: 3px 8px; border-radius: 8px; margin-top: 4px;
+        }
+
+        /* MODAL */
+        #modal-edit {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px); display: none; align-items: flex-end; z-index: 1000;
+        }
+        #modal-edit.show { display: flex; }
+        .modal-body {
+            background: white; width: 100%; padding: 24px 20px 36px;
+            border-radius: 28px 28px 0 0; animation: slideUp 0.3s ease;
+            max-height: 90vh; overflow-y: auto;
+        }
+
+        .modal-title { font-weight: 900; font-size: 1.05rem; margin: 0 0 18px; display: flex; align-items: center; gap: 10px; }
+        .modal-title i { color: #6366f1; }
+
+        label {
+            display: block; font-size: 0.62rem; font-weight: 800; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%; padding: 13px 15px; border-radius: 13px; border: 1.5px solid #f1f5f9;
+            background: #f8fafc; font-weight: 700; font-family: inherit; outline: none;
+            font-size: 0.85rem; transition: 0.2s; text-transform: lowercase; margin-bottom: 14px;
+        }
+        input:focus, textarea:focus { border-color: #6366f1; background: white; }
+        textarea { resize: none; }
+
+        /* TABS inside modal */
+        .modal-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+        .mtab {
+            flex: 1; padding: 10px; border: 2px solid #f1f5f9; background: #f8fafc;
+            border-radius: 12px; font-weight: 800; font-size: 0.75rem; color: #94a3b8;
+            cursor: pointer; transition: 0.2s; text-align: center; font-family: inherit;
+        }
+        .mtab.active { border-color: #6366f1; background: #eef2ff; color: #6366f1; }
+
+        .tab-panel { display: none; }
+        .tab-panel.show { display: block; }
+
+        /* VARIANT LIST in modal */
+        .mv-card {
+            background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px;
+            margin-bottom: 14px; overflow: hidden;
+        }
+        .mv-head {
+            padding: 12px 16px; background: white; border-bottom: 1.5px solid #f1f5f9;
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+        }
+        .mv-num {
+            width: 26px; height: 26px; background: #6366f1; color: white; border-radius: 8px;
+            font-size: 0.68rem; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .mv-name { flex: 1; font-weight: 800; font-size: 0.85rem; color: #1e293b; }
+        .mv-meta { font-size: 0.68rem; color: #94a3b8; font-weight: 600; }
+        .mv-toggle { font-size: 0.8rem; color: #94a3b8; transition: 0.2s; }
+        .mv-toggle.open { transform: rotate(180deg); }
+
+        .mv-body { padding: 14px 16px; display: none; }
+        .mv-body.open { display: block; }
+
+        /* STOK ROW in modal */
+        .msr {
+            background: white; border: 1.5px solid #f1f5f9; border-radius: 12px;
+            padding: 12px 14px; margin-bottom: 10px; position: relative;
+        }
+        .msr-grid { display: grid; grid-template-columns: 1fr 70px; gap: 8px; margin-bottom: 8px; }
+        .msr-grid input { margin-bottom: 0; font-size: 0.8rem; padding: 10px 12px; }
+        .msr-secret { background: #fff5f5; border-radius: 10px; padding: 10px 12px; border: 1px solid #fecaca; }
+        .msr-secret input { background: white; padding: 8px 12px; margin-bottom: 6px; font-size: 0.78rem; }
+        .msr-secret input:last-child { margin-bottom: 0; }
+        .msr-slabel { font-size: 0.6rem; font-weight: 800; color: #dc2626; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+        .btn-rm-msr {
+            position: absolute; top: 10px; right: 10px;
+            width: 26px; height: 26px; background: #fef2f2; border: none; border-radius: 8px;
+            color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
+        }
+
+        .btn-add-msr {
+            width: 100%; padding: 10px; border: 1.5px dashed #c7d2fe; border-radius: 12px;
+            background: transparent; color: #6366f1; font-weight: 800; font-size: 0.78rem;
+            cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-add-msr:hover { background: #eef2ff; }
+
+        .mv-footer {
+            padding: 10px 16px; background: #f8fafc; border-top: 1.5px solid #f1f5f9;
+            font-size: 0.7rem; font-weight: 700; color: #64748b;
+        }
+        .mv-footer b { color: #6366f1; }
+
+        /* BUTTONS */
+        .btn-save { width: 100%; padding: 17px; background: #1a1a1a; color: white; border: none; border-radius: 16px; font-weight: 900; font-size: 0.9rem; cursor: pointer; font-family: inherit; margin-top: 6px; }
+        .btn-cancel { width: 100%; background: none; border: none; margin-top: 12px; color: #ef4444; font-weight: 800; cursor: pointer; font-family: inherit; }
+
+        #loading-info { text-align: center; padding: 50px; color: #94a3b8; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="btn-back" onclick="location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></div>
+    <span class="header-title">edit data produk</span>
+</div>
+
+<div class="content">
+    <div id="loading-info">memuat produk anda...</div>
+    <div class="grid" id="product-grid"></div>
+</div>
+
+<!-- MODAL EDIT -->
+<div id="modal-edit">
+    <div class="modal-body">
+        <p class="modal-title"><i class="fa-solid fa-pen-to-square"></i> edit detail produk</p>
+
+        <input type="hidden" id="edit-key">
+
+        <!-- TABS -->
+        <div class="modal-tabs">
+            <button class="mtab active" id="tab-info-btn" onclick="switchTab('info')">
+                <i class="fa-solid fa-circle-info"></i> info umum
+            </button>
+            <button class="mtab" id="tab-stok-btn" onclick="switchTab('stok')">
+                <i class="fa-solid fa-boxes-stacked"></i> stok & variant
+            </button>
+        </div>
+
+        <!-- TAB: INFO UMUM -->
+        <div class="tab-panel show" id="tab-info">
+            <label>nama produk</label>
+            <input type="text" id="edit-nama" placeholder="nama produk">
+
+            <label>harga (rp)</label>
+            <input type="number" id="edit-harga" placeholder="50000">
+
+            <label>deskripsi</label>
+            <textarea id="edit-deskripsi" rows="3" placeholder="deskripsi produk..."></textarea>
+
+            <label>max bulk per order</label>
+            <input type="number" id="edit-max-bulk" placeholder="10">
+        </div>
+
+        <!-- TAB: STOK & VARIANT -->
+        <div class="tab-panel" id="tab-stok">
+            <!-- Produk TANPA variant -->
+            <div id="stok-normal-section">
+                <label>stok tersedia</label>
+                <input type="number" id="edit-stok" placeholder="jumlah stok">
+            </div>
+
+            <!-- Produk DENGAN variant -->
+            <div id="stok-variant-section" style="display:none;">
+                <div id="modal-variant-list"></div>
+            </div>
+        </div>
+
+        <button class="btn-save" onclick="simpanPerubahan()">
+            <i class="fa-solid fa-floppy-disk"></i> simpan perubahan
+        </button>
+        <button class="btn-cancel" onclick="closeModal()">batal</button>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const myToken = localStorage.getItem('sessionToken');
+
+    let editingProduct = null;  // full data produk yang sedang diedit
+    let editingVariants = [];   // deep copy variants untuk diedit
+
+    /* ── TABS ── */
+    function switchTab(tab) {
+        document.getElementById('tab-info').classList.toggle('show', tab === 'info');
+        document.getElementById('tab-stok').classList.toggle('show', tab === 'stok');
+        document.getElementById('tab-info-btn').classList.toggle('active', tab === 'info');
+        document.getElementById('tab-stok-btn').classList.toggle('active', tab === 'stok');
+    }
+
+    /* ── LOAD PRODUK ── */
+    function loadProduk() {
+        if (!myToken) return window.location.href = 'login.html';
+
+        db.ref('products').on('value', (snap) => {
+            const grid = document.getElementById('product-grid');
+            const loader = document.getElementById('loading-info');
+            grid.innerHTML = '';
+            loader.style.display = 'none';
+
+            if (!snap.exists()) {
+                grid.innerHTML = '<div style="grid-column:span 2; color:#94a3b8; text-align:center;">belum ada produk.</div>';
+                return;
+            }
+
+            snap.forEach(child => {
+                const p = child.val();
+                if (p.ownerToken !== myToken) return;
+
+                const totalStok = p.stok || 0;
+                const hasVariant = p.hasVariant && p.variants && p.variants.length > 0;
+                const hargaMin = hasVariant ? Math.min(...p.variants.map(v => v.harga || 0)) : (p.harga || 0);
+                const hargaDisplay = hasVariant ? `mulai rp ${hargaMin.toLocaleString('id-ID')}` : `rp ${hargaMin.toLocaleString('id-ID')}`;
+
+                grid.innerHTML += `
+                    <div class="p-card" onclick="openEdit('${child.key}')">
+                        ${hasVariant ? '<span class="p-card-badge">variant</span>' : ''}
+                        <img src="${p.foto || '../logo/joki.jpg'}" loading="lazy">
+                        <div style="padding:0 4px;">
+                            <span class="p-card-name">${p.nama}</span>
+                            <div class="p-card-price">${hargaDisplay}</div>
+                            <span class="stok-chip"><i class="fa-solid fa-box-open"></i> ${totalStok} stok</span>
+                        </div>
+                    </div>`;
+            });
+        });
+    }
+
+    /* ── OPEN EDIT ── */
+    async function openEdit(key) {
+        const snap = await db.ref('products/' + key).get();
+        if (!snap.exists()) return alert("produk tidak ditemukan.");
+
+        editingProduct = snap.val();
+        editingProduct._key = key;
+
+        document.getElementById('edit-key').value = key;
+        document.getElementById('edit-nama').value = editingProduct.nama || '';
+        document.getElementById('edit-harga').value = editingProduct.harga || '';
+        document.getElementById('edit-deskripsi').value = editingProduct.deskripsi || '';
+        document.getElementById('edit-max-bulk').value = editingProduct.maxBulk || 10;
+
+        const hasVariant = editingProduct.hasVariant && editingProduct.variants && editingProduct.variants.length > 0;
+
+        if (hasVariant) {
+            document.getElementById('stok-normal-section').style.display = 'none';
+            document.getElementById('stok-variant-section').style.display = 'block';
+            editingVariants = JSON.parse(JSON.stringify(editingProduct.variants));
+            renderModalVariants();
+        } else {
+            document.getElementById('stok-normal-section').style.display = 'block';
+            document.getElementById('stok-variant-section').style.display = 'none';
+            document.getElementById('edit-stok').value = editingProduct.stok || 0;
+        }
+
+        switchTab('info');
+        document.getElementById('modal-edit').classList.add('show');
+    }
+
+    /* ── RENDER MODAL VARIANTS ── */
+    function renderModalVariants() {
+        const container = document.getElementById('modal-variant-list');
+        container.innerHTML = '';
+
+        editingVariants.forEach((v, vIdx) => {
+            const totalStok = v.totalStok || (v.stokRows || []).reduce((s, r) => s + (r.qty || 0), 0);
+            const el = document.createElement('div');
+            el.className = 'mv-card';
+            el.id = 'mvcard-' + vIdx;
+
+            el.innerHTML = `
+                <div class="mv-head" onclick="toggleMVBody(${vIdx})">
+                    <div class="mv-num">${vIdx + 1}</div>
+                    <div style="flex:1">
+                        <div class="mv-name">${v.nama || 'variant ' + (vIdx + 1)}</div>
+                        <div class="mv-meta">rp ${(v.harga || 0).toLocaleString('id-ID')} · ${totalStok} stok</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-down mv-toggle" id="mvtoggle-${vIdx}"></i>
+                </div>
+                <div class="mv-body" id="mvbody-${vIdx}">
+                    <label>harga variant (rp)</label>
+                    <input type="number" value="${v.harga || 0}" id="mvharga-${vIdx}"
+                        oninput="updateMVMeta(${vIdx})">
+                    <label>deskripsi variant</label>
+                    <textarea rows="2" id="mvdesc-${vIdx}">${v.deskripsi || ''}</textarea>
+                    <label>max bulk</label>
+                    <input type="number" value="${v.maxBulk || 10}" id="mvbulk-${vIdx}">
+
+                    <label style="margin-top:4px;">baris stok <small style="font-weight:600">(tiap baris = 1 unit)</small></label>
+                    <div id="mvrows-${vIdx}"></div>
+                    <button class="btn-add-msr" onclick="tambahMSR(${vIdx})">
+                        <i class="fa-solid fa-plus"></i> tambah baris stok
+                    </button>
+                </div>
+                <div class="mv-footer" id="mvfooter-${vIdx}">
+                    total stok: <b id="mvstok-${vIdx}">${totalStok}</b> unit
+                </div>
+            `;
+            container.appendChild(el);
+
+            // render baris stok
+            (v.stokRows || []).forEach((row, rIdx) => {
+                renderMSR(vIdx, rIdx, row);
+            });
+        });
+    }
+
+    function toggleMVBody(vIdx) {
+        const body = document.getElementById('mvbody-' + vIdx);
+        const toggle = document.getElementById('mvtoggle-' + vIdx);
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        toggle.classList.toggle('open', !isOpen);
+    }
+
+    /* ── RENDER BARIS STOK ── */
+    function renderMSR(vIdx, rIdx, rowData) {
+        const container = document.getElementById('mvrows-' + vIdx);
+        const rowElId = 'msr-' + vIdx + '-' + rIdx;
+        const existing = document.getElementById(rowElId);
+        if (existing) existing.remove();
+
+        const el = document.createElement('div');
+        el.className = 'msr';
+        el.id = rowElId;
+        el.innerHTML = `
+            <button class="btn-rm-msr" onclick="hapusMSR(${vIdx}, ${rIdx})">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="msr-grid">
+                <div>
+                    <label>data / akun</label>
+                    <input type="text" value="${rowData.data || ''}" placeholder="email/username/key" class="msr-data">
+                </div>
+                <div>
+                    <label>qty</label>
+                    <input type="number" value="${rowData.qty || 1}" min="1" class="msr-qty" oninput="updateMVStok(${vIdx})">
+                </div>
+            </div>
+            <div class="msr-secret">
+                <div class="msr-slabel"><i class="fa-solid fa-lock"></i> akun rahasia</div>
+                <input type="text" value="${rowData.pass || ''}" placeholder="password / key rahasia" class="msr-pass">
+                <input type="text" value="${rowData.extra || ''}" placeholder="info tambahan (a2f, pin, dll)" class="msr-extra">
+            </div>
+        `;
+        container.appendChild(el);
+        updateMVStok(vIdx);
+    }
+
+    /* ── TAMBAH BARIS STOK ── */
+    function tambahMSR(vIdx) {
+        if (!editingVariants[vIdx].stokRows) editingVariants[vIdx].stokRows = [];
+        const newIdx = editingVariants[vIdx].stokRows.length;
+        editingVariants[vIdx].stokRows.push({ data: '', pass: '', extra: '', qty: 1 });
+        renderMSR(vIdx, newIdx, { data: '', pass: '', extra: '', qty: 1 });
+    }
+
+    /* ── HAPUS BARIS STOK ── */
+    function hapusMSR(vIdx, rIdx) {
+        editingVariants[vIdx].stokRows.splice(rIdx, 1);
+        renderModalVariants(); // re-render untuk update index
+    }
+
+    /* ── UPDATE STOK COUNT ── */
+    function updateMVStok(vIdx) {
+        const rows = document.querySelectorAll(`#mvrows-${vIdx} .msr`);
+        let total = 0;
+        rows.forEach(r => { total += parseInt(r.querySelector('.msr-qty').value) || 1; });
+        const el = document.getElementById('mvstok-' + vIdx);
+        if (el) el.innerText = total;
+    }
+
+    /* ── UPDATE META HEAD ── */
+    function updateMVMeta(vIdx) {
+        const harga = parseInt(document.getElementById('mvharga-' + vIdx)?.value) || 0;
+        const rows = document.querySelectorAll('#mvrows-' + vIdx + ' .msr-qty');
+        let total = 0;
+        rows.forEach(r => { total += parseInt(r.value) || 1; });
+        const meta = document.querySelector('#mvcard-' + vIdx + ' .mv-meta');
+        if (meta) meta.innerText = `rp ${harga.toLocaleString('id-ID')} · ${total} stok`;
+    }
+
+    /* ── SIMPAN ── */
+    async function simpanPerubahan() {
+        const key = document.getElementById('edit-key').value;
+        const namaBaru = document.getElementById('edit-nama').value.trim();
+        const hargaBaru = parseInt(document.getElementById('edit-harga').value) || 0;
+        const deskripsiBaru = document.getElementById('edit-deskripsi').value.trim();
+        const maxBulkBaru = parseInt(document.getElementById('edit-max-bulk').value) || 10;
+
+        if (!namaBaru) return alert("nama produk tidak boleh kosong!");
+
+        const hasVariant = editingProduct.hasVariant && editingProduct.variants && editingProduct.variants.length > 0;
+
+        const updateData = {
+            nama: namaBaru,
+            deskripsi: deskripsiBaru,
+            maxBulk: maxBulkBaru,
+        };
+
+        if (hasVariant) {
+            // kumpulkan data variant dari DOM
+            const updatedVariants = editingVariants.map((v, vIdx) => {
+                const harga = parseInt(document.getElementById('mvharga-' + vIdx)?.value) || v.harga;
+                const deskripsi = document.getElementById('mvdesc-' + vIdx)?.value.trim() || v.deskripsi;
+                const maxBulk = parseInt(document.getElementById('mvbulk-' + vIdx)?.value) || v.maxBulk;
+
+                // kumpulkan baris stok dari DOM
+                const rows = [];
+                document.querySelectorAll('#mvrows-' + vIdx + ' .msr').forEach(row => {
+                    rows.push({
+                        data: row.querySelector('.msr-data')?.value.trim() || '',
+                        pass: row.querySelector('.msr-pass')?.value.trim() || '',
+                        extra: row.querySelector('.msr-extra')?.value.trim() || '',
+                        qty: parseInt(row.querySelector('.msr-qty')?.value) || 1,
+                    });
+                });
+
+                const totalStok = rows.reduce((s, r) => s + r.qty, 0);
+                return { ...v, harga, deskripsi, maxBulk, stokRows: rows, totalStok };
+            });
+
+            const totalStokAll = updatedVariants.reduce((s, v) => s + v.totalStok, 0);
+            updateData.variants = updatedVariants;
+            updateData.stok = totalStokAll;
+            updateData.harga = updatedVariants[0]?.harga || hargaBaru || 0;
+        } else {
+            updateData.harga = hargaBaru;
+            updateData.stok = parseInt(document.getElementById('edit-stok').value) || 0;
+        }
+
+        try {
+            await db.ref('products/' + key).update(updateData);
+            alert("produk berhasil diupdate!");
+            closeModal();
+        } catch (err) {
+            alert("gagal update: " + err.message);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('modal-edit').classList.remove('show');
+        editingProduct = null;
+        editingVariants = [];
+    }
+
+    window.onload = loadProduk;
+</script>
+</body>
+</html>

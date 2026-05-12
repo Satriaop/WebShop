@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ajukan produk baru</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+        * { box-sizing: border-box; }
+        body {
+            background: #f0f4f8; color: #1a1a1a; font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0; padding: 16px 16px 120px; text-transform: lowercase;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+
+        /* HEADER */
+        .header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+        .btn-back {
+            width: 42px; height: 42px; border-radius: 14px; border: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: center;
+            color: #1a1a1a; text-decoration: none; background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-shrink: 0;
+        }
+        .header h2 { font-size: 1rem; margin: 0; font-weight: 900; }
+
+        /* CARD */
+        .card {
+            background: white; padding: 22px 20px; border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04); margin-bottom: 14px;
+        }
+        .card-title {
+            font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+        }
+        .card-title i { color: #6366f1; }
+
+        /* LABELS & INPUTS */
+        label {
+            display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8;
+            text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;
+        }
+        label .req { color: #ef4444; }
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%; padding: 13px 15px; border-radius: 14px; border: 1.5px solid #f1f5f9;
+            background: #f8fafc; outline: none; font-family: inherit; font-weight: 700;
+            font-size: 0.85rem; transition: 0.2s; text-transform: lowercase; margin-bottom: 14px;
+            color: #1a1a1a;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #6366f1; background: white; }
+        textarea { resize: none; }
+
+        /* UPLOAD */
+        .upload-wrapper {
+            width: 100%; aspect-ratio: 16/9; border: 2px dashed #e2e8f0; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; overflow: hidden; background: #f8fafc;
+            margin-bottom: 16px; transition: 0.2s;
+        }
+        .upload-wrapper:hover { border-color: #6366f1; }
+        #final-preview { width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; }
+        .upload-ph { text-align: center; color: #94a3b8; font-size: 0.78rem; font-weight: 700; }
+        .upload-ph i { font-size: 1.8rem; color: #6366f1; display: block; margin-bottom: 6px; }
+
+        /* GRID 2 */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* MERCHANT BADGE */
+        .merchant-badge {
+            background: #eef2ff; border: 1px solid #e0e7ff; padding: 12px 15px; border-radius: 14px;
+            margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+            color: #4338ca; font-size: 0.78rem; font-weight: 700;
+        }
+
+        /* SECRET BOX */
+        .secret-box {
+            background: #fff5f5; border: 1px solid #fecaca; padding: 18px; border-radius: 18px;
+            margin-top: 4px;
+        }
+        .secret-box .s-title {
+            font-size: 0.72rem; font-weight: 800; color: #dc2626;
+            display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+        }
+
+        /* ═══════════════════ VARIANT SECTION ═══════════════════ */
+        .variant-toggle-bar {
+            background: #f8fafc; border: 1.5px solid #f1f5f9; border-radius: 16px;
+            padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; margin-bottom: 16px; transition: 0.2s;
+        }
+        .variant-toggle-bar:hover { border-color: #6366f1; }
+        .variant-toggle-bar.on { border-color: #6366f1; background: #eef2ff; }
+        .toggle-label { font-weight: 800; font-size: 0.85rem; color: #1e293b; }
+        .toggle-label small { display: block; font-weight: 600; font-size: 0.68rem; color: #94a3b8; margin-top: 2px; }
+        .toggle-switch {
+            width: 46px; height: 26px; background: #e2e8f0; border-radius: 20px;
+            position: relative; transition: 0.3s; flex-shrink: 0;
+        }
+        .toggle-switch.on { background: #6366f1; }
+        .toggle-switch::after {
+            content: ''; position: absolute; width: 20px; height: 20px;
+            background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .toggle-switch.on::after { left: 23px; }
+
+        /* VARIANT PANEL */
+        #variant-panel { display: none; }
+
+        .variant-name-input {
+            background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;
+            padding: 12px 14px; font-family: inherit; font-weight: 700; font-size: 0.85rem;
+            width: 100%; margin-bottom: 12px; outline: none; transition: 0.2s;
+            text-transform: lowercase; color: #1a1a1a;
+        }
+        .variant-name-input:focus { border-color: #6366f1; background: white; }
+
+        /* VARIANT CARD */
+        .variant-card {
+            background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 18px;
+            margin-bottom: 14px; overflow: hidden; transition: 0.2s;
+        }
+        .variant-card:hover { border-color: #c7d2fe; }
+
+        .variant-card-head {
+            padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+            cursor: pointer; background: white; border-bottom: 1.5px solid #f1f5f9;
+        }
+        .variant-num {
+            width: 28px; height: 28px; background: #6366f1; color: white; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 900; flex-shrink: 0;
+        }
+        .variant-head-title { flex: 1; font-weight: 800; font-size: 0.85rem; color: #1e293b; }
+        .variant-head-meta { font-size: 0.68rem; font-weight: 600; color: #94a3b8; }
+        .btn-remove-variant {
+            width: 28px; height: 28px; background: #fef2f2; border: none; border-radius: 8px;
+            color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .variant-card-body { padding: 16px; }
+
+        /* STOK ROWS inside variant */
+        .stok-row {
+            background: white; border: 1.5px solid #f1f5f9; border-radius: 12px;
+            padding: 12px 14px; margin-bottom: 10px; position: relative;
+        }
+        .stok-row-grid {
+            display: grid; grid-template-columns: 1fr 80px; gap: 8px; margin-bottom: 8px;
+        }
+        .stok-row-grid input { margin-bottom: 0; font-size: 0.8rem; padding: 10px 12px; }
+        .stok-row textarea { margin-bottom: 0; font-size: 0.78rem; padding: 10px 12px; min-height: 60px; }
+        .stok-row-secret {
+            background: #fff5f5; border-radius: 10px; padding: 10px 12px; margin-top: 8px;
+            border: 1px solid #fecaca;
+        }
+        .stok-row-secret input { background: white; padding: 8px 12px; margin-bottom: 6px; font-size: 0.78rem; }
+        .stok-row-secret input:last-child { margin-bottom: 0; }
+        .s-label-secret { font-size: 0.62rem; font-weight: 800; color: #dc2626; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+
+        .btn-rm-row {
+            position: absolute; top: 10px; right: 10px;
+            width: 26px; height: 26px; background: #fef2f2; border: none; border-radius: 8px;
+            color: #ef4444; cursor: pointer; font-size: 0.7rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .btn-add-row {
+            width: 100%; padding: 10px; border: 1.5px dashed #c7d2fe; border-radius: 12px;
+            background: transparent; color: #6366f1; font-weight: 800; font-size: 0.78rem;
+            cursor: pointer; font-family: inherit; transition: 0.2s; display: flex;
+            align-items: center; justify-content: center; gap: 6px; margin-top: 4px;
+        }
+        .btn-add-row:hover { background: #eef2ff; }
+
+        .variant-footer { padding: 12px 16px; background: #f8fafc; border-top: 1.5px solid #f1f5f9; }
+        .variant-stok-count {
+            font-size: 0.72rem; font-weight: 700; color: #64748b; display: flex; gap: 12px;
+        }
+        .variant-stok-count b { color: #6366f1; }
+
+        /* ADD VARIANT BUTTON */
+        .btn-add-variant {
+            width: 100%; padding: 13px; border: 1.5px dashed #6366f1; border-radius: 14px;
+            background: transparent; color: #6366f1; font-weight: 800; font-size: 0.85rem;
+            cursor: pointer; font-family: inherit; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-add-variant:hover { background: #eef2ff; }
+
+        /* BULK SUPPORT NOTE */
+        .bulk-note {
+            background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 14px;
+            padding: 12px 16px; margin-bottom: 14px; font-size: 0.75rem;
+            font-weight: 700; color: #16a34a; display: flex; align-items: center; gap: 10px;
+        }
+
+        /* ACTION BAR */
+        .action-area {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(240, 244, 248, 0.95); backdrop-filter: blur(12px);
+            padding: 14px 20px 24px; z-index: 200;
+        }
+        .btn-submit {
+            width: 100%; max-width: 468px; margin: 0 auto; display: block;
+            padding: 17px; background: #1a1a1a; color: white; border: none;
+            border-radius: 16px; font-weight: 900; cursor: pointer; transition: 0.3s;
+            text-transform: lowercase; font-size: 0.9rem; font-family: inherit;
+        }
+        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        /* HARGA PREVIEW */
+        .harga-preview {
+            background: #eef2ff; border: 1.5px solid #c7d2fe; border-radius: 14px;
+            padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between;
+            align-items: center; font-size: 0.82rem; font-weight: 700;
+        }
+        .harga-preview .hp-label { color: #64748b; }
+        .hp-val { font-size: 1.1rem; font-weight: 900; color: #6366f1; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>ajukan produk baru</h2>
+    </div>
+
+    <!-- INFO TOKO -->
+    <div class="card">
+        <div class="merchant-badge">
+            <i class="fa-solid fa-store"></i>
+            <span>toko: <b id="shop-display">memuat...</b></span>
+        </div>
+
+        <!-- FOTO -->
+        <label>foto produk <span class="req">*</span></label>
+        <div class="upload-wrapper" onclick="document.getElementById('file-input').click()">
+            <img id="final-preview">
+            <div id="placeholder-content" class="upload-ph">
+                <i class="fa-solid fa-image"></i>
+                pilih foto produk
+            </div>
+            <input type="file" id="file-input" accept="image/*" style="display:none" onchange="prosesFoto(this)">
+        </div>
+
+        <!-- NAMA + KATEGORI -->
+        <label>nama produk <span class="req">*</span></label>
+        <input type="text" id="nama-produk" placeholder="nama produk">
+
+        <label>kategori <span class="req">*</span></label>
+        <select id="kategori-produk">
+            <option value="akun">akun</option>
+            <option value="app prem">app prem</option>
+            <option value="e-book">e-book</option>
+            <option value="produk digital">produk digital</option>
+            <option value="game">game</option>
+            <option value="streaming">streaming</option>
+            <option value="lain nya">lain nya</option>
+        </select>
+
+        <!-- DESKRIPSI -->
+        <label>deskripsi produk</label>
+        <textarea id="desc-produk" rows="3" placeholder="jelaskan produkmu..."></textarea>
+
+        <!-- ID -->
+        <label>id produk (otomatis)</label>
+        <input type="text" id="id-produk" readonly style="background:#e2e8f0; color:#94a3b8;">
+    </div>
+
+    <!-- ═══ HARGA (tanpa variant) ═══ -->
+    <div class="card" id="harga-section">
+        <div class="card-title"><i class="fa-solid fa-tag"></i> harga produk</div>
+
+        <div class="grid-2">
+            <div>
+                <label>harga awal (rp) <span class="req">*</span></label>
+                <input type="number" id="harga-awal" placeholder="0" oninput="hitungHargaFinal()">
+            </div>
+            <div>
+                <label>diskon (%)</label>
+                <input type="number" id="persen-diskon" value="0" oninput="hitungHargaFinal()">
+            </div>
+        </div>
+
+        <div class="harga-preview">
+            <span class="hp-label">harga jual akhir</span>
+            <span class="hp-val" id="harga-final-display">rp 0</span>
+        </div>
+        <input type="hidden" id="harga-final">
+
+        <div class="grid-2" style="margin-top:4px;">
+            <div>
+                <label>stok tersedia <span class="req">*</span></label>
+                <input type="number" id="stok-produk" value="1" min="1">
+            </div>
+            <div>
+                <label>batas pembelian / order</label>
+                <input type="number" id="max-bulk" value="10" min="1" placeholder="max bulk">
+            </div>
+        </div>
+
+        <div class="bulk-note">
+            <i class="fa-solid fa-layer-group"></i>
+            pembelian bulk diizinkan hingga batas max per order
+        </div>
+
+        <!-- AKUN RAHASIA (tanpa variant) -->
+        <div class="secret-box" id="secret-main">
+            <div class="s-title"><i class="fa-solid fa-lock"></i> data akun rahasia</div>
+            <label>email / username</label>
+            <input type="text" id="email-akun" placeholder="email/username">
+            <label>kata sandi</label>
+            <input type="text" id="pass-akun" placeholder="password">
+            <label>status 2fa</label>
+            <select id="a2f-status">
+                <option value="off">off</option>
+                <option value="on">on</option>
+            </select>
+            <label>informasi tambahan</label>
+            <textarea id="extra-info" rows="2" placeholder="info tambahan..."></textarea>
+        </div>
+    </div>
+
+    <!-- ═══ VARIANT SECTION ═══ -->
+    <div class="card">
+        <div class="card-title"><i class="fa-solid fa-layer-group"></i> sistem variant (opsional)</div>
+
+        <div class="variant-toggle-bar" id="variant-toggle" onclick="toggleVariant()">
+            <div class="toggle-label">
+                aktifkan variant
+                <small>tiap variant punya harga, stok & data tersendiri</small>
+            </div>
+            <div class="toggle-switch" id="toggle-sw"></div>
+        </div>
+
+        <div id="variant-panel">
+            <!-- NAMA GRUP VARIANT -->
+            <label>nama tipe variant (contoh: "ukuran", "paket", "masa aktif")</label>
+            <input class="variant-name-input" type="text" id="variant-group-name" placeholder="contoh: paket langganan">
+
+            <!-- LIST VARIANT -->
+            <div id="variant-list"></div>
+
+            <button class="btn-add-variant" onclick="tambahVariant()">
+                <i class="fa-solid fa-plus"></i> tambah variant baru
+            </button>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<div class="action-area">
+    <button class="btn-submit" id="btn-save" onclick="ajukanProduk()">
+        <i class="fa-solid fa-paper-plane"></i> kirim pengajuan
+    </button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const currentUser = localStorage.getItem('sessionToken');
+    const randomId = "prd-" + Date.now().toString().slice(-6);
+    let currentShopName = "official store";
+    let currentPaymentNum = "";
+    let fileToUpload = null;
+    let variantEnabled = false;
+    let variantCounter = 0;
+
+    /* ─── INIT ─── */
+    window.onload = function () {
+        document.getElementById('id-produk').value = randomId;
+        if (!currentUser) return window.location.href = 'login.html';
+        db.ref('users/' + currentUser).once('value', (snap) => {
+            if (snap.exists()) {
+                const d = snap.val();
+                currentShopName = d.shopName || d.fullname || "official store";
+                currentPaymentNum = d.paymentNumber || "";
+                document.getElementById('shop-display').innerText = currentShopName;
+            }
+        });
+    };
+
+    /* ─── FOTO ─── */
+    function prosesFoto(input) {
+        if (input.files && input.files[0]) {
+            fileToUpload = input.files[0];
+            const preview = document.getElementById('final-preview');
+            preview.src = URL.createObjectURL(fileToUpload);
+            preview.style.display = 'block';
+            document.getElementById('placeholder-content').style.display = 'none';
+        }
+    }
+
+    /* ─── HARGA ─── */
+    function hitungHargaFinal() {
+        const awal = parseFloat(document.getElementById('harga-awal').value) || 0;
+        const diskon = parseFloat(document.getElementById('persen-diskon').value) || 0;
+        const final = awal > 0 ? Math.round(awal - (awal * diskon / 100)) : 0;
+        document.getElementById('harga-final').value = final;
+        document.getElementById('harga-final-display').innerText = "rp " + final.toLocaleString('id-ID');
+    }
+
+    /* ─── TOGGLE VARIANT ─── */
+    function toggleVariant() {
+        variantEnabled = !variantEnabled;
+        const sw = document.getElementById('toggle-sw');
+        const bar = document.getElementById('variant-toggle');
+        const panel = document.getElementById('variant-panel');
+        const hargaSection = document.getElementById('harga-section');
+
+        sw.classList.toggle('on', variantEnabled);
+        bar.classList.toggle('on', variantEnabled);
+        panel.style.display = variantEnabled ? 'block' : 'none';
+
+        // sembunyikan harga & stok & akun rahasia global jika variant aktif
+        hargaSection.style.display = variantEnabled ? 'none' : 'block';
+
+        // buat satu variant default saat pertama diaktifkan
+        if (variantEnabled && document.getElementById('variant-list').children.length === 0) {
+            tambahVariant();
+        }
+    }
+
+    /* ─── TAMBAH VARIANT ─── */
+    function tambahVariant() {
+        variantCounter++;
+        const vId = 'v' + variantCounter;
+        const el = document.createElement('div');
+        el.className = 'variant-card';
+        el.id = 'vcard-' + vId;
+        el.innerHTML = `
+            <div class="variant-card-head">
+                <div class="variant-num">${variantCounter}</div>
+                <div style="flex:1">
+                    <input type="text" placeholder="nama variant (contoh: 1 bulan, premium, dll)"
+                        id="vname-${vId}" oninput="updateVariantHead('${vId}')"
+                        style="border:none; background:transparent; font-weight:800; font-size:0.85rem;
+                               width:100%; outline:none; font-family:inherit; text-transform:lowercase; color:#1e293b; padding:0;">
+                    <div class="variant-head-meta" id="vmeta-${vId}">0 stok · rp 0</div>
+                </div>
+                <button class="btn-remove-variant" onclick="hapusVariant('${vId}')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="variant-card-body">
+                <!-- HARGA VARIANT -->
+                <div class="grid-2" style="margin-bottom:4px;">
+                    <div>
+                        <label>harga variant (rp) <span class="req">*</span></label>
+                        <input type="number" id="vharga-${vId}" placeholder="0" oninput="updateVariantHead('${vId}')">
+                    </div>
+                    <div>
+                        <label>diskon variant (%)</label>
+                        <input type="number" id="vdiskon-${vId}" value="0" oninput="updateVariantHead('${vId}')">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label>max bulk per order</label>
+                    <input type="number" id="vbulk-${vId}" value="10" min="1" placeholder="max beli">
+                </div>
+
+                <label>deskripsi variant (untuk pembeli)</label>
+                <textarea id="vdesc-${vId}" rows="2" placeholder="jelaskan isi/benefit variant ini..."></textarea>
+
+                <!-- STOK ROWS -->
+                <label>data stok <span class="req">*</span> <small style="font-weight:600; text-transform:none">(tiap baris = 1 unit stok)</small></label>
+                <div id="stok-rows-${vId}"></div>
+                <button class="btn-add-row" onclick="tambahStokRow('${vId}')">
+                    <i class="fa-solid fa-plus"></i> tambah baris stok
+                </button>
+            </div>
+
+            <div class="variant-footer">
+                <div class="variant-stok-count" id="vstok-count-${vId}">
+                    <span>total stok: <b>0</b> unit</span>
+                </div>
+            </div>
+        `;
+        document.getElementById('variant-list').appendChild(el);
+        tambahStokRow(vId); // tambah 1 baris default
+    }
+
+    /* ─── HAPUS VARIANT ─── */
+    function hapusVariant(vId) {
+        const el = document.getElementById('vcard-' + vId);
+        if (el) el.remove();
+    }
+
+    /* ─── TAMBAH STOK ROW ─── */
+    function tambahStokRow(vId) {
+        const container = document.getElementById('stok-rows-' + vId);
+        const rowId = 'row-' + vId + '-' + Date.now();
+        const row = document.createElement('div');
+        row.className = 'stok-row';
+        row.id = rowId;
+        row.innerHTML = `
+            <button class="btn-rm-row" onclick="hapusStokRow('${rowId}', '${vId}')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="stok-row-grid">
+                <div>
+                    <label>data / akun</label>
+                    <input type="text" placeholder="email / username / key" class="stok-data-input">
+                </div>
+                <div>
+                    <label>qty (unit)</label>
+                    <input type="number" value="1" min="1" class="stok-qty-input" oninput="updateStokCount('${vId}')">
+                </div>
+            </div>
+            <div class="stok-row-secret">
+                <div class="s-label-secret"><i class="fa-solid fa-lock"></i> akun rahasia</div>
+                <input type="text" placeholder="password / token / key rahasia" class="stok-pass-input">
+                <input type="text" placeholder="info tambahan (a2f, pin, dll)" class="stok-extra-input">
+            </div>
+        `;
+        container.appendChild(row);
+        updateStokCount(vId);
+    }
+
+    /* ─── HAPUS STOK ROW ─── */
+    function hapusStokRow(rowId, vId) {
+        const el = document.getElementById(rowId);
+        if (el) el.remove();
+        updateStokCount(vId);
+    }
+
+    /* ─── UPDATE STOK COUNT ─── */
+    function updateStokCount(vId) {
+        const container = document.getElementById('stok-rows-' + vId);
+        if (!container) return;
+        const rows = container.querySelectorAll('.stok-row');
+        let total = 0;
+        rows.forEach(r => {
+            total += parseInt(r.querySelector('.stok-qty-input').value) || 1;
+        });
+        const countEl = document.getElementById('vstok-count-' + vId);
+        if (countEl) countEl.innerHTML = `<span>total stok: <b>${total}</b> unit</span>`;
+        updateVariantHead(vId);
+    }
+
+    /* ─── UPDATE HEAD META ─── */
+    function updateVariantHead(vId) {
+        const harga = parseInt(document.getElementById('vharga-' + vId)?.value) || 0;
+        const diskon = parseInt(document.getElementById('vdiskon-' + vId)?.value) || 0;
+        const hargaFinal = Math.round(harga - (harga * diskon / 100));
+
+        const container = document.getElementById('stok-rows-' + vId);
+        let totalStok = 0;
+        if (container) {
+            container.querySelectorAll('.stok-qty-input').forEach(inp => {
+                totalStok += parseInt(inp.value) || 1;
+            });
+        }
+
+        const meta = document.getElementById('vmeta-' + vId);
+        if (meta) meta.innerText = `${totalStok} stok · rp ${hargaFinal.toLocaleString('id-ID')}`;
+    }
+
+    /* ─── KUMPULKAN DATA VARIANT ─── */
+    function kumpulkanVariant() {
+        const variantCards = document.querySelectorAll('.variant-card');
+        const variants = [];
+
+        variantCards.forEach((card) => {
+            const idAttr = card.id.replace('vcard-', '');
+            const vId = idAttr;
+
+            const nama = document.getElementById('vname-' + vId)?.value.trim() || '';
+            const harga = parseInt(document.getElementById('vharga-' + vId)?.value) || 0;
+            const diskon = parseInt(document.getElementById('vdiskon-' + vId)?.value) || 0;
+            const hargaFinal = Math.round(harga - (harga * diskon / 100));
+            const deskripsi = document.getElementById('vdesc-' + vId)?.value.trim() || '';
+            const maxBulk = parseInt(document.getElementById('vbulk-' + vId)?.value) || 10;
+
+            // kumpulkan baris stok
+            const stokRows = [];
+            const rowContainer = document.getElementById('stok-rows-' + vId);
+            if (rowContainer) {
+                rowContainer.querySelectorAll('.stok-row').forEach(row => {
+                    stokRows.push({
+                        data: row.querySelector('.stok-data-input')?.value.trim() || '',
+                        qty: parseInt(row.querySelector('.stok-qty-input')?.value) || 1,
+                        pass: row.querySelector('.stok-pass-input')?.value.trim() || '',
+                        extra: row.querySelector('.stok-extra-input')?.value.trim() || '',
+                    });
+                });
+            }
+
+            const totalStok = stokRows.reduce((s, r) => s + r.qty, 0);
+
+            variants.push({ nama, harga: hargaFinal, diskon, deskripsi, maxBulk, totalStok, stokRows });
+        });
+
+        return variants;
+    }
+
+    /* ─── KIRIM ─── */
+    async function ajukanProduk() {
+        const btn = document.getElementById('btn-save');
+        const namaProduk = document.getElementById('nama-produk').value.trim();
+
+        if (!fileToUpload || !namaProduk) {
+            return alert("lengkapi nama produk dan foto!");
+        }
+
+        // validasi
+        if (variantEnabled) {
+            const variants = kumpulkanVariant();
+            if (variants.length === 0) return alert("tambahkan minimal 1 variant!");
+            for (const v of variants) {
+                if (!v.nama) return alert("isi nama semua variant!");
+                if (!v.harga) return alert("isi harga semua variant!");
+                if (v.stokRows.length === 0) return alert("tambahkan minimal 1 baris stok di setiap variant!");
+            }
+        } else {
+            const harga = parseInt(document.getElementById('harga-final').value);
+            const stok = parseInt(document.getElementById('stok-produk').value);
+            if (!harga || !stok) return alert("lengkapi harga dan stok!");
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> mengupload...';
+
+        try {
+            // cek limit
+            const uSnap = await db.ref('users/' + currentUser).get();
+            const uData = uSnap.val();
+            if ((parseInt(uData.saleLimit || 0)) <= 0) {
+                alert("limit upload produk habis!");
+                btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> kirim pengajuan';
+                return;
+            }
+
+            // upload foto
+            const formData = new FormData();
+            formData.append("image", fileToUpload);
+            const imgRes = await fetch("https://api.imgbb.com/1/upload?key=50145b1eaa1385c3d9549ebe496eb5b5", {
+                method: "POST", body: formData
+            }).then(r => r.json());
+            if (!imgRes.success) throw new Error("gagal upload foto");
+
+            await db.ref('users/' + currentUser).update({ saleLimit: (parseInt(uData.saleLimit) || 0) - 1 });
+
+            let payload = {
+                productId: randomId,
+                nama: namaProduk,
+                kategori: document.getElementById('kategori-produk').value,
+                foto: imgRes.data.url,
+                deskripsi: document.getElementById('desc-produk').value,
+                uploadBy: currentShopName,
+                ownerToken: currentUser,
+                ownerDana: currentPaymentNum,
+                status: "pending",
+                timestamp: Date.now(),
+                hasVariant: variantEnabled,
+            };
+
+            if (variantEnabled) {
+                const variants = kumpulkanVariant();
+                const totalStokAll = variants.reduce((s, v) => s + v.totalStok, 0);
+                payload.variants = variants;
+                payload.stok = totalStokAll;
+                payload.harga = variants[0]?.harga || 0; // harga awal dari variant pertama
+                payload.variantGroupName = document.getElementById('variant-group-name').value.trim() || 'variant';
+            } else {
+                payload.harga = parseInt(document.getElementById('harga-final').value);
+                payload.stok = parseInt(document.getElementById('stok-produk').value);
+                payload.maxBulk = parseInt(document.getElementById('max-bulk').value) || 10;
+                payload.akun = {
+                    email: document.getElementById('email-akun').value,
+                    pass: document.getElementById('pass-akun').value,
+                    a2f: document.getElementById('a2f-status').value,
+                    tambahan: document.getElementById('extra-info').value,
+                };
+            }
+
+            await db.ref('pending_products').push(payload);
+            alert("berhasil diajukan!");
+            window.location.href = 'dashboard.html';
+
+        } catch (e) {
+            alert("error: " + e.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> kirim pengajuan';
+        }
+    }
+</script>
+</body>
+</html>

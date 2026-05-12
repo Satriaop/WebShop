@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>detail produk</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --dark: #0f172a;
+            --text-light: #64748b;
+            --bg-soft: #f8fafc;
+            --glass: rgba(255,255,255,0.85);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--bg-soft); color: var(--dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0; padding: 0; text-transform: lowercase;
+            letter-spacing: -0.3px;
+        }
+
+        /* HEADER */
+        .header-nav {
+            position: fixed; top: 0; width: 100%; height: 68px;
+            display: flex; align-items: center; padding: 0 20px;
+            box-sizing: border-box; z-index: 100;
+        }
+        .btn-back {
+            width: 44px; height: 44px; background: var(--glass);
+            backdrop-filter: blur(12px); border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--dark); text-decoration: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        /* SLIDER */
+        .image-viewport { width: 100%; aspect-ratio: 1/1; background: #e2e8f0; position: relative; overflow: hidden; }
+        .slider-wrapper { display: flex; width: 100%; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .slider-wrapper::-webkit-scrollbar { display: none; }
+        .slide-item { min-width: 100%; height: 100%; scroll-snap-align: start; }
+        .slide-item img { width: 100%; height: 100%; object-fit: cover; }
+        .dot-nav { position: absolute; bottom: 55px; width: 100%; display: flex; justify-content: center; gap: 6px; z-index: 10; }
+        .dot { width: 6px; height: 6px; background: rgba(0,0,0,0.15); border-radius: 50%; transition: 0.3s; }
+        .dot.active { background: var(--primary); width: 20px; border-radius: 10px; }
+
+        /* MAIN */
+        .main-content {
+            background: white; border-radius: 32px 32px 0 0;
+            margin-top: -36px; position: relative;
+            padding: 28px 22px 160px;
+            box-shadow: 0 -12px 40px rgba(0,0,0,0.04);
+        }
+
+        .category-pill {
+            display: inline-block; padding: 5px 12px;
+            background: #eff6ff; color: var(--primary);
+            border-radius: 10px; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px;
+        }
+
+        .product-name { font-size: 1.4rem; font-weight: 900; color: var(--dark); margin: 12px 0 6px; line-height: 1.2; }
+
+        .rating-inline {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.82rem; font-weight: 700; margin-bottom: 18px;
+        }
+        .rating-inline i { color: #f59e0b; }
+
+        .section-label {
+            font-size: 0.65rem; font-weight: 800; color: var(--text-light);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block;
+        }
+
+        /* STORE CARD */
+        .store-card {
+            background: #f8fafc; border-radius: 18px; padding: 14px;
+            display: flex; align-items: center; gap: 14px; margin-bottom: 26px;
+            border: 1px solid #f1f5f9;
+        }
+        .store-img { width: 48px; height: 48px; background: white; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
+        .store-name { font-weight: 800; color: var(--dark); font-size: 0.92rem; }
+
+        /* ═══ VARIANT SELECTOR ═══ */
+        .variant-section { margin-bottom: 24px; }
+
+        .variant-group-label {
+            font-size: 0.65rem; font-weight: 800; color: var(--text-light);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: block;
+        }
+
+        .variant-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .variant-chip {
+            padding: 10px 16px; border-radius: 14px; border: 2px solid #e2e8f0;
+            background: #f8fafc; cursor: pointer; font-weight: 700; font-size: 0.8rem;
+            color: #475569; transition: 0.2s; display: flex; flex-direction: column;
+            align-items: flex-start; gap: 2px; min-width: 80px;
+        }
+        .variant-chip:hover { border-color: var(--primary); }
+        .variant-chip.selected { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
+        .variant-chip.sold-out { opacity: 0.45; cursor: not-allowed; }
+        .variant-chip .vc-name { font-weight: 800; font-size: 0.82rem; }
+        .variant-chip .vc-price { font-size: 0.7rem; font-weight: 700; }
+        .variant-chip .vc-stok { font-size: 0.62rem; color: #94a3b8; }
+
+        /* VARIANT INFO BOX */
+        .variant-info-box {
+            background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px;
+            padding: 16px; margin-top: 14px; display: none; animation: fadeSlide 0.25s ease;
+        }
+        .variant-info-box.show { display: block; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .vi-harga { font-size: 1.5rem; font-weight: 900; color: var(--primary); margin-bottom: 6px; }
+        .vi-desc { font-size: 0.82rem; color: var(--text-light); line-height: 1.6; margin-bottom: 10px; }
+        .vi-stok-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #fef3c7; color: #d97706; border-radius: 10px;
+            padding: 6px 12px; font-size: 0.72rem; font-weight: 800;
+        }
+
+        /* ═══ HARGA NORMAL (tanpa variant) ═══ */
+        .price-section { display: flex; align-items: baseline; gap: 10px; margin-bottom: 22px; }
+        .price-final { font-size: 1.7rem; font-weight: 900; color: var(--primary); }
+
+        /* ═══ QTY & BULK ═══ */
+        .qty-bulk-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 22px; flex-wrap: wrap; gap: 12px;
+        }
+        .stock-info { display: flex; align-items: center; gap: 10px; }
+        .stock-icon { background: #fef3c7; color: #d97706; padding: 8px; border-radius: 10px; font-size: 0.8rem; }
+        .stock-text { font-size: 0.82rem; font-weight: 700; }
+
+        .qty-control { display: flex; align-items: center; gap: 5px; background: #f1f5f9; padding: 5px; border-radius: 14px; }
+        .qty-btn { width: 36px; height: 36px; border: none; background: white; border-radius: 10px; font-weight: 800; cursor: pointer; color: var(--dark); transition: 0.15s; }
+        .qty-btn:hover { background: #e2e8f0; }
+        .qty-val { width: 34px; text-align: center; font-weight: 900; font-size: 0.95rem; }
+
+        /* BULK BADGE */
+        .bulk-badge {
+            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
+            padding: 10px 14px; font-size: 0.75rem; font-weight: 700;
+            color: #2563eb; display: flex; align-items: center; gap: 8px; margin-bottom: 22px;
+        }
+
+        /* DESKRIPSI */
+        .description-text { font-size: 0.88rem; line-height: 1.65; color: var(--text-light); margin-bottom: 30px; white-space: pre-line; }
+
+        /* REVIEW */
+        .review-card { border-bottom: 1px solid #f1f5f9; padding: 14px 0; }
+        .review-user { font-weight: 800; font-size: 0.84rem; margin-bottom: 4px; display: block; }
+        .review-stars { color: #f59e0b; font-size: 0.65rem; margin-bottom: 6px; }
+        .review-desc { font-size: 0.84rem; color: var(--text-light); line-height: 1.5; }
+
+        /* FOOTER */
+        .footer-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);
+            padding: 14px 22px 30px; box-sizing: border-box;
+            border-top: 1px solid #f1f5f9; z-index: 100;
+        }
+
+        .footer-total {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .total-label { font-size: 0.68rem; font-weight: 700; color: var(--text-light); }
+        .total-val { font-size: 1.3rem; font-weight: 900; color: var(--dark); }
+
+        .btn-buy {
+            width: 100%; height: 56px; border-radius: 18px; border: none;
+            background: var(--dark); color: white;
+            font-weight: 900; font-size: 0.92rem; cursor: pointer; transition: 0.25s;
+            font-family: inherit;
+        }
+        .btn-buy:active { transform: scale(0.98); }
+        .btn-buy:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+
+        /* LOADING */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* MODAL SUKSES */
+        #modal-sukses {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            z-index: 2000; display: none; align-items: flex-end;
+        }
+        #modal-sukses.show { display: flex; }
+        .sukses-body {
+            background: white; width: 100%; padding: 28px 24px 40px;
+            border-radius: 30px 30px 0 0; animation: slideUp 0.35s cubic-bezier(0.34,1.2,0.64,1);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .sukses-icon { font-size: 3rem; text-align: center; margin-bottom: 12px; }
+        .sukses-title { text-align: center; font-weight: 900; font-size: 1.2rem; color: #16a34a; margin-bottom: 6px; }
+        .sukses-sub { text-align: center; font-size: 0.8rem; color: var(--text-light); margin-bottom: 22px; font-weight: 600; }
+
+        .data-akun-box {
+            background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 18px; margin-bottom: 20px;
+        }
+        .dab-label { font-size: 0.65rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+        .dab-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .dab-key { font-size: 0.78rem; font-weight: 700; color: var(--text-light); }
+        .dab-val { font-size: 0.82rem; font-weight: 800; color: var(--dark); max-width: 200px; text-align: right; word-break: break-all; }
+
+        .btn-copy-akun {
+            width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e2e8f0;
+            background: white; font-weight: 800; cursor: pointer; color: var(--dark);
+            font-family: inherit; margin-bottom: 10px; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-ke-riwayat {
+            width: 100%; padding: 16px; border-radius: 16px; background: var(--dark);
+            color: white; border: none; font-weight: 900; cursor: pointer; font-family: inherit; font-size: 0.9rem;
+        }
+
+        /* MULTI RESULT (bulk) */
+        .bulk-result-list { max-height: 200px; overflow-y: auto; }
+        .bulk-item {
+            background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+            padding: 12px 14px; margin-bottom: 8px;
+        }
+        .bulk-item-num { font-size: 0.65rem; font-weight: 800; color: var(--text-light); margin-bottom: 4px; }
+        .bulk-item-data { font-size: 0.8rem; font-weight: 700; color: var(--dark); }
+    </style>
+</head>
+<body>
+
+<div id="loading-screen">
+    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem; color:var(--primary);"></i>
+</div>
+
+<div class="header-nav">
+    <a href="javascript:history.back()" class="btn-back"><i class="fa-solid fa-chevron-left"></i></a>
+</div>
+
+<!-- IMAGE SLIDER -->
+<div class="image-viewport">
+    <div class="slider-wrapper" id="image-slider"></div>
+    <div class="dot-nav" id="dot-nav"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <span id="det-cat" class="category-pill">kategori</span>
+    <h1 id="det-title" class="product-name">memuat...</h1>
+
+    <div class="rating-inline">
+        <i class="fa-solid fa-star"></i>
+        <span id="avg-rating">0.0</span>
+        <span style="color:var(--text-light); font-weight:500;">• <span id="total-reviews">0</span> ulasan</span>
+    </div>
+
+    <!-- STORE -->
+    <div class="store-card">
+        <div class="store-img"><i class="fa-solid fa-store"></i></div>
+        <div style="flex:1">
+            <span class="section-label" style="margin:0">penjual terverifikasi</span>
+            <div id="store-name" class="store-name">memuat...</div>
+        </div>
+        <i class="fa-solid fa-circle-check" style="color:var(--primary);"></i>
+    </div>
+
+    <!-- ── HARGA (no variant) ── -->
+    <div id="price-no-variant" class="price-section" style="display:none;">
+        <span id="det-price-new" class="price-final">rp 0</span>
+    </div>
+
+    <!-- ── VARIANT SELECTOR ── -->
+    <div class="variant-section" id="variant-section" style="display:none;">
+        <span class="variant-group-label" id="variant-group-label">pilih variant</span>
+        <div class="variant-chips" id="variant-chips"></div>
+        <div class="variant-info-box" id="variant-info-box">
+            <div class="vi-harga" id="vi-harga">rp 0</div>
+            <div class="vi-desc" id="vi-desc"></div>
+            <span class="vi-stok-badge"><i class="fa-solid fa-box-open"></i> <span id="vi-stok">0 stok tersedia</span></span>
+        </div>
+    </div>
+
+    <!-- ── QTY & BULK ── -->
+    <div class="qty-bulk-row">
+        <div class="stock-info">
+            <div class="stock-icon"><i class="fa-solid fa-box-open"></i></div>
+            <span id="det-stock-text" class="stock-text">stok: 0 tersedia</span>
+        </div>
+        <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(-1)"><i class="fa-solid fa-minus"></i></button>
+            <div class="qty-val" id="qty-val">1</div>
+            <button class="qty-btn" onclick="changeQty(1)"><i class="fa-solid fa-plus"></i></button>
+        </div>
+    </div>
+
+    <div class="bulk-badge" id="bulk-badge">
+        <i class="fa-solid fa-layer-group"></i>
+        <span id="bulk-text">pembelian bulk tersedia</span>
+    </div>
+
+    <!-- DESKRIPSI -->
+    <div style="margin-bottom:28px;">
+        <span class="section-label">deskripsi produk</span>
+        <div id="det-desc" class="description-text"></div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <span class="section-label" style="margin:0">ulasan pembeli</span>
+        </div>
+        <div id="comments-list">
+            <p style="font-size:0.84rem; color:var(--text-light); text-align:center; padding:20px;">belum ada ulasan.</p>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER BUY -->
+<div class="footer-nav">
+    <div class="footer-total">
+        <span class="total-label">total pembayaran</span>
+        <span class="total-val" id="total-display">rp 0</span>
+    </div>
+    <button id="btn-buy" class="btn-buy" onclick="handleBuy()">beli sekarang</button>
+</div>
+
+<!-- MODAL SUKSES -->
+<div id="modal-sukses">
+    <div class="sukses-body">
+        <div class="sukses-icon">🎉</div>
+        <div class="sukses-title">pembelian berhasil!</div>
+        <div class="sukses-sub" id="sukses-sub">data akun kamu sudah siap</div>
+
+        <div class="data-akun-box" id="akun-box"></div>
+
+        <button class="btn-copy-akun" onclick="copyAllData()">
+            <i class="fa-solid fa-copy"></i> salin semua data
+        </button>
+        <button class="btn-ke-riwayat" onclick="location.href='riwayat-user.html'">
+            lihat riwayat pembelian
+        </button>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const currentUserToken = localStorage.getItem('sessionToken');
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    let currentStock = 0;
+    let basePrice = 0;
+    let currentQty = 1;
+    let maxBulk = 10;
+    let productFullData = null;
+    let productFirebaseKey = null;
+    let selectedVariantIndex = null;
+    let copiedDataText = '';
+
+    /* ── QTY ── */
+    function changeQty(val) {
+        const next = currentQty + val;
+        if (next < 1) return;
+        if (next > currentStock) { alert("stok tidak mencukupi"); return; }
+        if (next > maxBulk) { alert(`maksimal pembelian ${maxBulk} unit per order`); return; }
+        currentQty = next;
+        document.getElementById('qty-val').innerText = currentQty;
+        updateBuyButton();
+    }
+
+    function updateBuyButton() {
+        const total = basePrice * currentQty;
+        document.getElementById('total-display').innerText = "rp " + total.toLocaleString('id-ID');
+    }
+
+    /* ── SLIDER ── */
+    function renderSlider(album, singleFoto) {
+        const slider = document.getElementById('image-slider');
+        const dotNav = document.getElementById('dot-nav');
+        const imgs = (album && Array.isArray(album) && album.length > 0) ? album : [singleFoto];
+        slider.innerHTML = imgs.map(img => `<div class="slide-item"><img src="${img}" loading="lazy"></div>`).join('');
+        dotNav.innerHTML = imgs.length > 1 ? imgs.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('') : '';
+        if (imgs.length > 1) {
+            slider.addEventListener('scroll', () => {
+                const idx = Math.round(slider.scrollLeft / slider.offsetWidth);
+                document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+            });
+        }
+    }
+
+    /* ── VARIANT UI ── */
+    function renderVariants(variants, groupName) {
+        document.getElementById('variant-section').style.display = 'block';
+        document.getElementById('price-no-variant').style.display = 'none';
+        document.getElementById('variant-group-label').innerText = `pilih ${groupName || 'variant'}`;
+
+        const chipsEl = document.getElementById('variant-chips');
+        chipsEl.innerHTML = '';
+
+        variants.forEach((v, idx) => {
+            const stok = v.totalStok || 0;
+            const chip = document.createElement('div');
+            chip.className = 'variant-chip' + (stok <= 0 ? ' sold-out' : '');
+            chip.innerHTML = `
+                <span class="vc-name">${v.nama}</span>
+                <span class="vc-price">rp ${(v.harga || 0).toLocaleString('id-ID')}</span>
+                <span class="vc-stok">${stok > 0 ? stok + ' stok' : 'habis'}</span>
+            `;
+            if (stok > 0) {
+                chip.onclick = () => selectVariant(idx, variants);
+            }
+            chipsEl.appendChild(chip);
+        });
+
+        // pilih variant pertama yang ada stok
+        const firstAvail = variants.findIndex(v => (v.totalStok || 0) > 0);
+        if (firstAvail >= 0) selectVariant(firstAvail, variants);
+    }
+
+    function selectVariant(idx, variants) {
+        selectedVariantIndex = idx;
+        const v = variants[idx];
+
+        // update chip highlight
+        document.querySelectorAll('.variant-chip').forEach((c, i) => c.classList.toggle('selected', i === idx));
+
+        // update info box
+        const infoBox = document.getElementById('variant-info-box');
+        infoBox.className = 'variant-info-box show';
+        document.getElementById('vi-harga').innerText = "rp " + (v.harga || 0).toLocaleString('id-ID');
+        document.getElementById('vi-desc').innerText = v.deskripsi || '-';
+        document.getElementById('vi-stok').innerText = (v.totalStok || 0) + " stok tersedia";
+
+        // update state
+        basePrice = v.harga || 0;
+        currentStock = v.totalStok || 0;
+        maxBulk = v.maxBulk || 10;
+        currentQty = 1;
+        document.getElementById('qty-val').innerText = '1';
+        document.getElementById('det-stock-text').innerText = "stok: " + currentStock + " tersedia";
+        document.getElementById('bulk-text').innerText = `pembelian bulk hingga ${maxBulk} unit/order`;
+
+        const btn = document.getElementById('btn-buy');
+        btn.disabled = currentStock <= 0;
+        if (currentStock <= 0) btn.innerText = "stok habis";
+        else btn.innerText = "beli sekarang";
+
+        updateBuyButton();
+    }
+
+    /* ── FETCH ── */
+    function fetchDetail() {
+        if (!productId) return window.location.href = 'dashboard.html';
+
+        db.ref('products').orderByChild('productId').equalTo(productId).on('value', (snap) => {
+            document.getElementById('loading-screen').style.display = 'none';
+            if (!snap.exists()) return;
+
+            snap.forEach(child => {
+                productFirebaseKey = child.key;
+                productFullData = child.val();
+
+                renderSlider(productFullData.album, productFullData.foto);
+                document.getElementById('det-title').innerText = productFullData.nama;
+                document.getElementById('det-cat').innerText = productFullData.kategori;
+                document.getElementById('det-desc').innerText = productFullData.deskripsi || '';
+
+                if (productFullData.hasVariant && productFullData.variants && productFullData.variants.length > 0) {
+                    // mode variant
+                    renderVariants(productFullData.variants, productFullData.variantGroupName);
+                } else {
+                    // mode normal
+                    currentStock = productFullData.stok || 0;
+                    basePrice = productFullData.harga || 0;
+                    maxBulk = productFullData.maxBulk || 10;
+
+                    document.getElementById('price-no-variant').style.display = 'flex';
+                    document.getElementById('variant-section').style.display = 'none';
+                    document.getElementById('det-price-new').innerText = "rp " + basePrice.toLocaleString('id-ID');
+                    document.getElementById('det-stock-text').innerText = "stok: " + currentStock + " tersedia";
+                    document.getElementById('bulk-text').innerText = `pembelian bulk hingga ${maxBulk} unit/order`;
+
+                    const btn = document.getElementById('btn-buy');
+                    btn.disabled = currentStock <= 0;
+                    if (currentStock <= 0) btn.innerText = "stok habis";
+                    updateBuyButton();
+                }
+
+                // load toko
+                const ownerToken = productFullData.ownerToken || '';
+                db.ref('users/' + ownerToken).once('value', s => {
+                    document.getElementById('store-name').innerText =
+                        s.exists() ? (s.val().shopName || s.val().fullname || productFullData.uploadBy || 'toko resmi') : (productFullData.uploadBy || 'toko resmi');
+                });
+
+                loadReviews();
+            });
+        });
+    }
+
+    /* ── REVIEWS ── */
+    function loadReviews() {
+        db.ref('reviews/' + productId).on('value', snap => {
+            const container = document.getElementById('comments-list');
+            if (!snap.exists()) return;
+            let html = '', totalRate = 0, count = 0;
+            snap.forEach(c => {
+                const d = c.val();
+                totalRate += d.rating; count++;
+                html += `<div class="review-card">
+                    <span class="review-user">${d.userName}</span>
+                    <div class="review-stars">${'<i class="fa-solid fa-star"></i>'.repeat(d.rating)}</div>
+                    <p class="review-desc">${d.comment}</p>
+                </div>`;
+            });
+            document.getElementById('avg-rating').innerText = (totalRate / count).toFixed(1);
+            document.getElementById('total-reviews').innerText = count;
+            container.innerHTML = html;
+        });
+    }
+
+    /* ── AMBIL STOK DATA dari variant ── */
+    function ambilDataStokVariant(variant, qty) {
+        const rows = variant.stokRows || [];
+        const hasil = [];
+        let sisa = qty;
+
+        for (const row of rows) {
+            if (sisa <= 0) break;
+            const ambil = Math.min(row.qty, sisa);
+            for (let i = 0; i < ambil; i++) {
+                hasil.push({ data: row.data, pass: row.pass, extra: row.extra });
+            }
+            sisa -= ambil;
+        }
+        return hasil;
+    }
+
+    /* ── BELI ── */
+    async function handleBuy() {
+        if (!currentUserToken) return alert("silakan login dahulu.");
+        if (currentStock < currentQty) return alert("stok tidak cukup.");
+
+        const finalPrice = basePrice * currentQty;
+        if (!confirm(`beli ${currentQty} item seharga rp ${finalPrice.toLocaleString('id-ID')}?`)) return;
+
+        const btn = document.getElementById('btn-buy');
+        btn.disabled = true;
+        btn.innerText = "memproses...";
+
+        try {
+            const buyerSnap = await db.ref('users/' + currentUserToken).get();
+            if (!buyerSnap.exists()) throw new Error("akun tidak valid.");
+            const buyerData = buyerSnap.val();
+            const saldoBuyer = parseInt(buyerData.balance || 0);
+
+            if (saldoBuyer < finalPrice) {
+                alert("saldo tidak mencukupi.");
+                btn.disabled = false;
+                if (currentStock > 0) { btn.innerText = "beli sekarang"; updateBuyButton(); }
+                return;
+            }
+
+            const ownerToken = productFullData.ownerToken || '';
+            const ownerSnap = await db.ref('users/' + ownerToken).get();
+            const saldoOwner = ownerSnap.exists() ? parseInt(ownerSnap.val().balance || 0) : 0;
+
+            const adminFee = Math.round((finalPrice * 5) / 100);
+            const netOwner = finalPrice - adminFee;
+            const orderId = "inv-" + Date.now();
+
+            const upd = {};
+            upd['users/' + currentUserToken + '/balance'] = saldoBuyer - finalPrice;
+            upd['users/' + ownerToken + '/balance'] = saldoOwner + netOwner;
+
+            // ── DATA HASIL BELI ──
+            let deliveredData = [];
+            let akunInfoHtml = '';
+
+            if (productFullData.hasVariant && productFullData.variants && selectedVariantIndex !== null) {
+                const variant = productFullData.variants[selectedVariantIndex];
+                deliveredData = ambilDataStokVariant(variant, currentQty);
+
+                // kurangi stok di stokRows
+                const updatedVariants = JSON.parse(JSON.stringify(productFullData.variants));
+                let sisa = currentQty;
+                for (const row of updatedVariants[selectedVariantIndex].stokRows) {
+                    if (sisa <= 0) break;
+                    const ambil = Math.min(row.qty, sisa);
+                    row.qty -= ambil;
+                    sisa -= ambil;
+                }
+                const newTotalStok = updatedVariants[selectedVariantIndex].stokRows.reduce((s, r) => s + (r.qty || 0), 0);
+                updatedVariants[selectedVariantIndex].totalStok = newTotalStok;
+
+                const totalStokAll = updatedVariants.reduce((s, v) => s + (v.totalStok || 0), 0);
+                upd['products/' + productFirebaseKey + '/variants'] = updatedVariants;
+                upd['products/' + productFirebaseKey + '/stok'] = totalStokAll;
+
+                // build html
+                if (currentQty === 1) {
+                    const d = deliveredData[0] || {};
+                    akunInfoHtml = `
+                        <div class="dab-label">data akun kamu</div>
+                        <div class="dab-row"><span class="dab-key">data / akun</span><span class="dab-val">${d.data || '-'}</span></div>
+                        <div class="dab-row"><span class="dab-key">password / key</span><span class="dab-val">${d.pass || '-'}</span></div>
+                        ${d.extra ? `<div class="dab-row"><span class="dab-key">info tambahan</span><span class="dab-val">${d.extra}</span></div>` : ''}
+                        <div class="dab-row"><span class="dab-key">variant</span><span class="dab-val">${variant.nama}</span></div>
+                    `;
+                    copiedDataText = `variant: ${variant.nama}\ndata: ${d.data || '-'}\npassword: ${d.pass || '-'}\ninfo: ${d.extra || '-'}`;
+                } else {
+                    let listHtml = '<div class="dab-label">data ' + currentQty + ' akun</div><div class="bulk-result-list">';
+                    copiedDataText = `variant: ${variant.nama} (x${currentQty})\n`;
+                    deliveredData.forEach((d, i) => {
+                        listHtml += `<div class="bulk-item"><div class="bulk-item-num">unit ${i + 1}</div><div class="bulk-item-data">data: ${d.data || '-'} | pass: ${d.pass || '-'}${d.extra ? ' | ' + d.extra : ''}</div></div>`;
+                        copiedDataText += `[${i + 1}] data: ${d.data} | pass: ${d.pass}${d.extra ? ' | ' + d.extra : ''}\n`;
+                    });
+                    listHtml += '</div>';
+                    akunInfoHtml = listHtml;
+                }
+
+            } else {
+                // produk biasa
+                const akunData = productFullData.akun || {};
+                upd['products/' + productFirebaseKey + '/stok'] = currentStock - currentQty;
+
+                akunInfoHtml = `
+                    <div class="dab-label">data akun kamu</div>
+                    <div class="dab-row"><span class="dab-key">email / username</span><span class="dab-val">${akunData.email || '-'}</span></div>
+                    <div class="dab-row"><span class="dab-key">kata sandi</span><span class="dab-val">${akunData.pass || '-'}</span></div>
+                    <div class="dab-row"><span class="dab-key">status 2fa</span><span class="dab-val">${akunData.a2f || '-'}</span></div>
+                    ${akunData.tambahan ? `<div class="dab-row"><span class="dab-key">tambahan</span><span class="dab-val">${akunData.tambahan}</span></div>` : ''}
+                `;
+                copiedDataText = `email: ${akunData.email || '-'}\npassword: ${akunData.pass || '-'}\n2fa: ${akunData.a2f || '-'}\ninfo: ${akunData.tambahan || '-'}`;
+            }
+
+            // simpan order
+            upd['pembelian/' + orderId] = {
+                orderId, userToken: currentUserToken,
+                namaPembeli: buyerData.fullname || "pembeli",
+                productId, nama: productFullData.nama,
+                qty: currentQty, total: finalPrice, status: "sukses",
+                ownerToken, timestamp: Date.now(),
+                variantNama: selectedVariantIndex !== null ? (productFullData.variants?.[selectedVariantIndex]?.nama || '') : '',
+            };
+
+            await db.ref().update(upd);
+
+            // tampilkan modal sukses
+            document.getElementById('akun-box').innerHTML = akunInfoHtml;
+            document.getElementById('sukses-sub').innerText =
+                currentQty > 1 ? `${currentQty} unit berhasil dibeli` : `data akun kamu sudah siap`;
+            document.getElementById('modal-sukses').classList.add('show');
+
+        } catch (e) {
+            alert("error: " + e.message);
+            btn.disabled = false;
+            if (currentStock > 0) { btn.innerText = "beli sekarang"; updateBuyButton(); }
+        }
+    }
+
+    function copyAllData() {
+        navigator.clipboard.writeText(copiedDataText).then(() => {
+            const btn = document.querySelector('.btn-copy-akun');
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> tersalin!';
+            setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-copy"></i> salin semua data'; }, 2000);
+        });
+    }
+
+    window.onload = fetchDetail;
+</script>
+</body>
+</html>
