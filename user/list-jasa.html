@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>market jasa and joki</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes fadein { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body { 
+            background: #f0f4f8; color: #1a1a1a; font-family: 'inter', sans-serif; 
+            margin: 0; text-transform: lowercase; overflow-x: hidden; width: 100%;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px);
+            height: 70px; display: flex; align-items: center; padding: 0 20px;
+            position: sticky; top: 0; z-index: 999; border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .btn-back {
+            width: 42px; height: 42px; background: #fff; border: 1px solid #e2e8f0;
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; margin-right: 15px; color: #1e293b;
+        }
+
+        .content { padding: 15px; max-width: 500px; margin: 0 auto; }
+
+        .search-wrapper {
+            background: white; padding: 2px; border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03); border: 1.5px solid #cbd5e1;
+            margin-bottom: 20px; display: flex; align-items: center;
+        }
+        .search-wrapper i { margin-left: 15px; color: #94a3b8; font-size: 0.9rem; }
+        .search-wrapper input {
+            width: 100%; padding: 14px 10px; border: none; outline: none;
+            background: transparent; font-size: 0.85rem; font-family: inherit;
+        }
+
+        .slider-container {
+            width: 100%; height: 170px; position: relative;
+            margin-bottom: 25px; overflow: hidden; border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .slider-wrapper {
+            display: flex; width: 100%; height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .slide { min-width: 100%; height: 100%; position: relative; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+        .slide-text {
+            position: absolute; bottom: 0; left: 0; right: 0; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.8)); 
+            color: white; padding: 30px 20px 15px; font-size: 0.85rem; font-weight: 800;
+        }
+
+        .label-section {
+            font-size: 0.7rem; font-weight: 900; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-left: 5px; margin-bottom: 12px; display: block;
+        }
+        .provider-scroll {
+            display: flex; gap: 15px; overflow-x: auto; padding: 5px;
+            margin: 0 -5px 20px; scrollbar-width: none;
+        }
+        .provider-scroll::-webkit-scrollbar { display: none; }
+        
+        .provider-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 8px; cursor: pointer; transition: 0.3s; min-width: 75px;
+        }
+        .provider-img-wrapper {
+            width: 65px; height: 65px; border-radius: 22px;
+            padding: 3px; border: 2.5px solid transparent;
+            transition: 0.3s;
+            background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            overflow: hidden;
+        }
+        
+        .provider-item.active .provider-img-wrapper { 
+            border-color: #1a1a1a;
+            transform: translateY(-3px); 
+        }
+
+        .provider-item .provider-img-wrapper img {
+            border: 2px solid #e2e8f0;
+            border-radius: 18px;
+        }
+
+        .provider-item img { width: 100%; height: 100%; border-radius: 18px; object-fit: cover; }
+        .provider-name { 
+            font-size: 0.65rem; font-weight: 800; color: #64748b;
+            max-width: 75px; text-align: center; white-space: nowrap; 
+            overflow: hidden; text-overflow: ellipsis; 
+        }
+
+        .kat-scroll {
+            display: flex; gap: 8px; overflow-x: auto; padding: 5px;
+            margin: 0 -5px 20px; scrollbar-width: none;
+        }
+        .kat-pill {
+            padding: 10px 18px; background: white; border-radius: 14px;
+            font-size: 0.7rem; font-weight: 800; color: #64748b;
+            border: 1px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            white-space: nowrap; cursor: pointer;
+        }
+        .kat-pill.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+
+        .grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 15px; animation: fadein 0.6s ease;
+        }
+        .p-card {
+            background: white; padding: 10px; border-radius: 22px; 
+            border: 1.5px solid #cbd5e1; box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+            cursor: pointer; transition: 0.3s; position: relative;
+        }
+        .p-card:active { transform: scale(0.96); }
+        
+        .p-rating {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(255,255,255,0.9); padding: 4px 8px;
+            border-radius: 10px; font-size: 0.6rem; font-weight: 900;
+            color: #fbbe24; z-index: 2; border: 1px solid #e2e8f0;
+        }
+
+        .img-box {
+            width: 100%; aspect-ratio: 1/1; border-radius: 18px;
+            margin-bottom: 12px; background: #f8fafc;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            border: 1px solid #e2e8f0; 
+        }
+        
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .p-tag { font-size: 0.55rem; font-weight: 900; color: #6366f1; text-transform: uppercase; display: block; margin-left: 4px; }
+        .p-title { 
+            font-size: 0.8rem; font-weight: 800; color: #1e293b; 
+            display: block; height: 2.4em; overflow: hidden; margin: 5px 4px; line-height: 1.2;
+        }
+        .p-price { font-size: 0.95rem; font-weight: 900; color: #1a1a1a; display: block; margin: 8px 4px 5px; }
+
+        #loading-info { text-align: center; padding: 100px 0; color: #94a3b8; font-size: 0.8rem; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="btn-back" onclick="location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></div>
+        <span style="font-weight: 900; font-size: 1.1rem; letter-spacing: -0.5px;">market jasa</span>
+    </div>
+
+    <div class="content">
+        <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="pencarian" placeholder="cari jasa..." oninput="jalankanFilter()">
+        </div>
+
+        <div id="slider-container" class="slider-container">
+            <div id="slider-wrapper" class="slider-wrapper"></div>
+        </div>
+
+        <span class="label-section">provider by</span>
+        <div class="provider-scroll" id="list-provider">
+            <div class="provider-item active" id="btn-semua-seller" onclick="filterBySeller('all', this)">
+                <div class="provider-img-wrapper" style="display:flex; align-items:center; justify-content:center; border-width: 2.5px;">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
+                <span class="provider-name">semua</span>
+            </div>
+        </div>
+
+        <div class="kat-scroll">
+            <div class="kat-pill active" onclick="setKategori('semua', this)">semua</div>
+            <div class="kat-pill" onclick="setKategori('jasa push rank ml', this)">push rank ml</div>
+            <div class="kat-pill" onclick="setKategori('jasa push rank ff', this)">push rank ff</div>
+            <div class="kat-pill" onclick="setKategori('jasa joki event', this)">joki event</div>
+            <div class="kat-pill" onclick="setKategori('jasa lainnya', this)">lainnya</div>
+        </div>
+
+        <div id="loading-info"><i class="fa-solid fa-spinner fa-spin"></i><br><br>memuat data...</div>
+        <div class="grid" id="jasa-grid"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+            databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "market-d978f",
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let masterJasa = [];
+        let sellerCache = {};
+        let filterKategori = 'semua';
+        let filterSeller = 'all';
+        let currentSlide = 0;
+
+        function initSlider() {
+            db.ref('banner_promo').on('value', (snap) => {
+                const wrapper = document.getElementById('slider-wrapper');
+                wrapper.innerHTML = "";
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        wrapper.innerHTML += `<div class="slide"><img src="${child.val().image_url}"><div class="slide-text">${child.val().title || ""}</div></div>`;
+                    });
+                    setInterval(() => {
+                        const slides = document.querySelectorAll('.slide');
+                        if(slides.length <= 1) return;
+                        currentSlide = (currentSlide + 1) % slides.length;
+                        wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+                    }, 4000);
+                }
+            });
+        }
+
+        async function loadData() {
+            db.ref('services').on('value', async (snap) => {
+                const info = document.getElementById('loading-info');
+                const providerCont = document.getElementById('list-provider');
+                masterJasa = [];
+                
+                if (snap.exists()) {
+                    info.style.display = 'none';
+                    let tempJasa = [];
+                    let sellerIds = new Set();
+                    
+                    snap.forEach(c => {
+                        let data = { id: c.key, ...c.val() };
+                        tempJasa.push(data);
+                        sellerIds.add(data.ownerToken);
+                    });
+
+                    const btnSemua = document.getElementById('btn-semua-seller');
+                    providerCont.innerHTML = "";
+                    providerCont.appendChild(btnSemua);
+
+                    for (let token of sellerIds) {
+                        const sSnap = await db.ref('users/' + token.replace(/\./g, ',')).get();
+                        const u = sSnap.val() || {};
+                        sellerCache[token] = {
+                            name: u.shopName || u.fullname || "store",
+                            photo: u.foto || `https://ui-avatars.com/api/?name=${u.fullname}&background=random`,
+                            rating: parseFloat(u.ratingJasa || 0)
+                        };
+                        
+                        const item = document.createElement('div');
+                        item.className = 'provider-item' + (filterSeller === token ? ' active' : '');
+                        item.onclick = () => filterBySeller(token, item);
+                        item.innerHTML = `
+                            <div class="provider-img-wrapper"><img src="${sellerCache[token].photo}"></div>
+                            <span class="provider-name">${sellerCache[token].name}</span>
+                        `;
+                        providerCont.appendChild(item);
+                    }
+
+                    masterJasa = tempJasa.map(j => ({
+                        ...j,
+                        sellerName: sellerCache[j.ownerToken]?.name || "store",
+                        sellerRating: sellerCache[j.ownerToken]?.rating || 0
+                    })).sort((a,b) => b.sellerRating - a.sellerRating);
+
+                    jalankanFilter();
+                } else {
+                    info.innerHTML = "belum ada jasa tersedia.";
+                }
+            });
+        }
+
+        function setKategori(kat, el) {
+            filterKategori = kat;
+            document.querySelectorAll('.kat-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            jalankanFilter();
+        }
+
+        function filterBySeller(token, el) {
+            filterSeller = token;
+            document.querySelectorAll('.provider-item').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            jalankanFilter();
+        }
+
+        function jalankanFilter() {
+            const cari = document.getElementById('pencarian').value.toLowerCase();
+            const grid = document.getElementById('jasa-grid');
+            grid.innerHTML = "";
+
+            const hasil = masterJasa.filter(j => {
+                const matchKat = filterKategori === 'semua' || j.kategori === filterKategori;
+                const matchSell = filterSeller === 'all' || j.ownerToken === filterSeller;
+                const matchName = j.nama.toLowerCase().includes(cari);
+                return matchKat && matchSell && matchName;
+            });
+
+            if(hasil.length === 0) {
+                grid.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 40px; color: #94a3b8; font-size: 0.8rem;">jasa tidak ditemukan.</div>';
+                return;
+            }
+
+            hasil.forEach(j => {
+                const imgUrl = j.foto ? j.foto : '../logo/joki.jpg';
+                const starRating = j.sellerRating > 0 ? `
+                    <div class="p-rating">
+                        <i class="fa-solid fa-star"></i> ${j.sellerRating.toFixed(1)}
+                    </div>` : '';
+                
+                grid.innerHTML += `
+                    <div class="p-card" onclick="prosesOrder('${j.id}', ${j.harga})">
+                        ${starRating}
+                        <div class="img-box">
+                            <img src="${imgUrl}" alt="logo joki">
+                        </div>
+                        <div style="padding: 0 2px;">
+                            <span class="p-tag">${j.kategori}</span>
+                            <span class="p-title">${j.nama}</span>
+                            <span style="font-size:0.6rem; color:#94a3b8; font-weight:700; margin-left:4px;">by ${j.sellerName}</span>
+                            <span class="p-price">rp ${(j.harga || 0).toLocaleString('id-ID')}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function prosesOrder(id, harga) {
+            const token = localStorage.getItem('sessionToken');
+            if (!token) return alert("silakan login dahulu.");
+            if (!confirm(`order jasa ini seharga rp ${harga.toLocaleString('id-ID')}?`)) return;
+
+            try {
+                const uSnap = await db.ref('users/' + token).get();
+                const sld = parseInt(uSnap.val().balance || 0);
+                if (sld < harga) return alert("saldo anda tidak mencukupi.");
+
+                const jData = masterJasa.find(x => x.id === id);
+                const ownerToken = jData.ownerToken.replace(/\./g, ',');
+                const orderId = "order-js-" + Date.now();
+                
+                const nominalPotongan = (harga * 5) / 100;
+                const saldoBersihOwner = harga - nominalPotongan;
+
+                const ownerSnap = await db.ref('users/' + ownerToken).get();
+                const saldoOwnerSekarang = parseInt(ownerSnap.val().balance || 0);
+
+                const upd = {};
+                upd['users/' + token + '/balance'] = sld - harga;
+                upd['users/' + ownerToken + '/balance'] = saldoOwnerSekarang + saldoBersihOwner;
+                upd['pembelian/' + orderId] = {
+                    orderId: orderId,
+                    userToken: token,
+                    namaPembeli: uSnap.val().fullname,
+                    productId: id,
+                    nama: jData.nama,
+                    foto: jData.foto || '',
+                    total: harga,
+                    potonganAdmin: nominalPotongan,
+                    diterimaOwner: saldoBersihOwner,
+                    status: "sukses",
+                    type: "jasa",
+                    ownerToken: jData.ownerToken,
+                    namaToko: jData.sellerName,
+                    timestamp: Date.now()
+                };
+
+                await db.ref().update(upd);
+                alert("berhasil melakukan order jasa!");
+                location.href = 'invoice.html?id=' + orderId;
+            } catch (e) { alert(e.message); }
+        }
+
+        window.onload = () => { initSlider(); loadData(); };
+    </script>
+</body>
+</html>
