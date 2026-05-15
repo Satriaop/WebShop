@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>admin | hapus produk 😼</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            background: #f0f4f8; color: #1a1a1a; font-family: 'inter', sans-serif; 
+            margin: 0; padding: 20px; text-transform: lowercase;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .btn-back { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #1a1a1a; text-decoration: none; background: white; }
+        
+        .search-box {
+            background: white; padding: 10px 20px; border-radius: 20px;
+            display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .search-box input { border: none; outline: none; width: 100%; font-family: inherit; font-weight: 600; text-transform: lowercase; }
+
+        .list-produk { display: flex; flex-direction: column; gap: 15px; }
+        
+        .produk-card {
+            background: white; padding: 15px; border-radius: 22px;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.03); border: 1px solid #fff;
+            transition: all 0.3s ease;
+        }
+        .produk-card.deleting {
+            opacity: 0.5; pointer-events: none;
+        }
+        .produk-img { width: 70px; height: 70px; border-radius: 15px; object-fit: cover; background: #f8fafc; }
+        
+        .produk-info { flex: 1; }
+        .produk-info h4 { margin: 0; font-size: 0.85rem; font-weight: 800; color: #1e293b; }
+        .produk-info p { margin: 3px 0 0; font-size: 0.75rem; font-weight: 700; color: #007bff; }
+        .produk-info span { font-size: 0.65rem; color: #94a3b8; font-weight: 600; }
+
+        .btn-delete {
+            width: 45px; height: 45px; background: #fff1f2; color: #be123c;
+            border: none; border-radius: 15px; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+        }
+        .btn-delete.loading { background: #be123c; color: white; }
+        .btn-delete:active { transform: scale(0.9); }
+
+        .toast { 
+            position: fixed; top: 20px; right: 20px; padding: 15px 20px; 
+            border-radius: 12px; color: white; font-weight: 700; z-index: 1000;
+            transform: translateX(400px); transition: 0.3s; font-size: 0.9rem;
+        }
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+
+        #empty-state { text-align: center; padding: 50px 20px; display: none; }
+        #empty-state i { font-size: 3rem; color: #e2e8f0; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <a href="dashboard.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2 style="font-size: 1rem; margin: 0; font-weight: 900;">hapus produk tertinggi 😼</h2>
+    </div>
+
+    <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
+        <input type="text" id="cari-produk" placeholder="cari nama produk..." oninput="filterProduk()">
+    </div>
+
+    <div id="loading-list" style="text-align: center; padding: 20px;">
+        <i class="fa-solid fa-circle-notch fa-spin" style="color: #007bff;"></i>
+    </div>
+
+    <div id="empty-state">
+        <i class="fa-solid fa-box-open"></i>
+        <p style="font-weight: 800; color: #94a3b8;">tidak ada produk ditemukan</p>
+    </div>
+
+    <div class="list-produk" id="container-produk"></div>
+</div>
+
+<!-- Toast notifications -->
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseconfig = {
+        apiKey: "AIzaSyDGRsCcT-7Bv_nOAybjXyuIT6Ca0IT4YTg",
+        databaseURL: "https://market-d978f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "market-d978f",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseconfig);
+    const db = firebase.database();
+
+    let productsData = {}; // Cache data lokal
+
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.getElementById('toast-container').appendChild(toast);
+        
+        setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+        setTimeout(() => {
+            toast.style.transform = 'translateX(400px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function loadProduk() {
+        const container = document.getElementById('container-produk');
+        const loading = document.getElementById('loading-list');
+        const empty = document.getElementById('empty-state');
+        
+        container.innerHTML = "";
+        loading.style.display = 'block';
+        empty.style.display = 'none';
+
+        // Gunakan once() untuk load awal, bukan on() terus-menerus
+        db.ref('products').once('value')
+            .then((snap) => {
+                loading.style.display = 'none';
+                productsData = snap.val() || {};
+                
+                if (Object.keys(productsData).length > 0) {
+                    empty.style.display = 'none';
+                    Object.entries(productsData).forEach(([id, data]) => {
+                        renderProduk(id, data);
+                    });
+                } else {
+                    empty.style.display = 'block';
+                }
+            })
+            .catch((err) => {
+                loading.style.display = 'none';
+                showToast('error load data: ' + err.message, 'error');
+            });
+    }
+
+    function renderProduk(id, data) {
+        const container = document.getElementById('container-produk');
+        container.innerHTML += `
+            <div class="produk-card" data-id="${id}" data-nama="${data.nama}">
+                <img src="${data.foto}" class="produk-img" onerror="this.src='https://placehold.co/100x100?text=no+image'">
+                <div class="produk-info">
+                    <h4>${data.nama}</h4>
+                    <p>rp ${data.harga.toLocaleString('id-ID')}</p>
+                    <span>id: ${data.productId} | stok: ${data.stok}</span>
+                </div>
+                <button class="btn-delete" onclick="hapusProduk('${id}', '${data.nama}')">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    function filterProduk() {
+        const keyword = document.getElementById('cari-produk').value.toLowerCase();
+        const cards = document.querySelectorAll('.produk-card');
+        let adaMatch = false;
+
+        cards.forEach(card => {
+            const nama = card.getAttribute('data-nama').toLowerCase();
+            if (nama.includes(keyword)) {
+                card.style.display = 'flex';
+                adaMatch = true;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        document.getElementById('empty-state').style.display = adaMatch ? 'none' : 'block';
+    }
+
+    function hapusProduk(id, nama) {
+        if (confirm(`hapus permanen produk "${nama}"? \ntindakan ini tidak bisa dibatalkan 😼`)) {
+            const card = document.querySelector(`[data-id="${id}"]`);
+            const btn = card.querySelector('.btn-delete');
+            
+            // Visual feedback
+            card.classList.add('deleting');
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+
+            // Hapus dari Firebase DAN cache lokal
+            Promise.all([
+                db.ref('products/' + id).remove(),
+                delete productsData[id]
+            ])
+            .then(() => {
+                // Manual remove card dari DOM
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.remove();
+                    checkEmptyState();
+                }, 300);
+                
+                showToast(`"${nama}" berhasil dimusnahkan! 😼`);
+            })
+            .catch((err) => {
+                // Reset UI jika gagal
+                card.classList.remove('deleting');
+                btn.classList.remove('loading');
+                btn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+                
+                showToast('gagal hapus: ' + err.message, 'error');
+                console.error('Delete error:', err);
+            });
+        }
+    }
+
+    function checkEmptyState() {
+        const container = document.getElementById('container-produk');
+        const empty = document.getElementById('empty-state');
+        
+        if (container.children.length === 0) {
+            empty.style.display = 'block';
+        }
+    }
+
+    // Refresh manual jika perlu
+    function refreshData() {
+        loadProduk();
+    }
+
+    // Jalankan saat halaman load
+    window.onload = loadProduk;
+    
+    // Refresh setiap 30 detik (opsional)
+    setInterval(refreshData, 30000);
+</script>
+</body>
+</html>
